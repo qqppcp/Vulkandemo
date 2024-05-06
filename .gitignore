@@ -30,3 +30,34 @@
 *.exe
 *.out
 *.app
+
+x64/
+bin/
+bin-int/
+*bin-int/
+obj/
+/packages/
+riderModule.iml
+/_ReSharper.Caches/
+
+# =========================
+# IDE/Editor
+# =========================
+
+.cache/
+.vscode/
+.idea/
+.vs/
+.clangd/
+
+# =========================
+# Build
+# =========================
+
+compile_commands.json
+cmake-build*/
+*build/
+build*/
+*.profraw
+*.tlog
+*.spv
