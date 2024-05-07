@@ -3,10 +3,14 @@
 
 namespace {
     GLFWwindow* pWindow = nullptr;
+    uint32_t _width;
+    uint32_t _height;
 }
 
-void CreateWindow(int width, int height, const char* pTitle, bool hidewindow)
+void CreateWindow(uint32_t width, uint32_t height, const char* pTitle, bool hidewindow)
 {
+    _width = width;
+    _height = height;
     glfwInit();
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     glfwWindowHint(GLFW_VISIBLE, !hidewindow);
@@ -40,6 +44,17 @@ const char** windowGetVulkanExtensions(uint32_t* pExtensionCount)
     return glfwGetRequiredInstanceExtensions(pExtensionCount);
 }
 
+template<typename T>
+inline void GetWindowSize(T& width, T& height)
+{
+    width = static_cast<T>(_width);
+    height = static_cast<T>(_height);
+}
+
+std::tuple<uint32_t, uint32_t> GetWindowSize()
+{
+    return {_width, _height};
+}
 
 VkSurfaceKHR GetVkSurface(vk::Instance instance)
 {

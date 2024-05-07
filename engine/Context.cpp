@@ -7,12 +7,12 @@
 #include <format>
 #include <unordered_set>
 
-Context* Context::instance_ = nullptr;
-
+std::unique_ptr<Context> Context::instance_ = nullptr;
 bool validation = true;
 
 Context::~Context()
 {
+	instance.destroySurfaceKHR(surface);
 	destroyDevice();
 #ifdef _DEBUG
 	DestroyDebugCallback(instance);
@@ -23,10 +23,25 @@ Context::~Context()
 void Context::InitContext()
 {
 	if (!instance_)
-		instance_ = new Context();
+		instance_.reset(new Context());
 
 }
 
+void Context::Quit()
+{
+	instance_.reset();
+}
+
+void Context::InitSwapchain()
+{
+	auto [width, height] = GetWindowSize();
+	swapchian.reset(new Swapchain(width, height));
+}
+
+void Context::DestroySwapchain()
+{
+	swapchian.reset();
+}
 Context& Context::GetInstance()
 {
 	if (!instance_)
@@ -40,11 +55,16 @@ Context::Context()
 	std::vector<const char*> extensions;
 	if (validation)
 		layers.emplace_back("VK_LAYER_KHRONOS_validation");
+
 	uint32_t extensionCount;
 	const char** extensionNames = windowGetVulkanExtensions(&extensionCount);
 	for (int i = 0; i < extensionCount; ++i)
 		extensions.emplace_back(extensionNames[i]);
 	
+#ifdef _DEBUG
+	extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+#endif // _DEBUG
+
 	vk::InstanceCreateInfo createinfo;
 	vk::ApplicationInfo appinfo;
 	appinfo.setApiVersion(VK_API_VERSION_1_3)
@@ -54,12 +74,15 @@ Context::Context()
 		.setPEnabledExtensionNames(extensions);
 	instance = vk::createInstance(createinfo);
 	DEMO_LOG(Info, "success to create vulkan instance.");
+
 #ifdef _DEBUG
 	CreateDebugCallback(instance);
 #endif // _DEBUG
+
 	surface = GetVkSurface(instance);
 	selectPhysicalDevice();
 	createDevice();
+
 }
 
 
@@ -88,7 +111,7 @@ void Context::selectPhysicalDevice()
 				queueFamileInfo.computeFamilyIndex.value(),
 				queueFamileInfo.transferFamilyIndex.value(),
 				(char*)properties.deviceName));
-			this->phydevice = phydevice;
+			this->physicaldevice = phydevice;
 			DEMO_LOG(Info, std::format("Select device: {}", (char*)properties.deviceName));
 			switch (properties.deviceType)
 			{
@@ -205,7 +228,7 @@ void Context::createDevice() {
 	deviceCI.setQueueCreateInfos(queueCIs)
 		.setPEnabledExtensionNames(extensions)
 		.setPEnabledFeatures(&features);
-	device = phydevice.createDevice(deviceCI);
+	device = physicaldevice.createDevice(deviceCI);
 
 	graphicsQueue = device.getQueue(queueFamileInfo.graphicsFamilyIndex.value(), 0);
 	presentQueue = device.getQueue(queueFamileInfo.presentFamilyIndex.value(), 0);

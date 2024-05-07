@@ -30,6 +30,24 @@
     <ClCompile Include="log.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Swapchain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderPool.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="render_process.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="program.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="backend.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Context.h">
@@ -42,6 +60,24 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="log.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Swapchain.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderPool.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="render_process.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="program.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="backend.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

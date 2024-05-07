@@ -139,16 +139,28 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="backend.cpp" />
     <ClCompile Include="debugcallback.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Context.cpp" />
+    <ClCompile Include="program.cpp" />
+    <ClCompile Include="render_process.cpp" />
+    <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="ShaderPool.cpp" />
+    <ClCompile Include="Swapchain.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="backend.h" />
     <ClInclude Include="Context.h" />
     <ClInclude Include="debugcallback.h" />
     <ClInclude Include="log.h" />
+    <ClInclude Include="program.h" />
+    <ClInclude Include="render_process.h" />
+    <ClInclude Include="Shader.h" />
+    <ClInclude Include="ShaderPool.h" />
+    <ClInclude Include="Swapchain.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
