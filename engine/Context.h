@@ -23,7 +23,7 @@ public:
 	vk::SurfaceKHR surface;
 	vk::PhysicalDevice physicaldevice;
 	vk::Device device;
-	std::unique_ptr<Swapchain> swapchian;
+	std::unique_ptr<Swapchain> swapchain;
 	struct QueueFamilyIndex {
 		std::optional<uint32_t> graphicsFamilyIndex;
 		std::optional<uint32_t> presentFamilyIndex;

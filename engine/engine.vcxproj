@@ -145,6 +145,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Context.cpp" />
     <ClCompile Include="program.cpp" />
+    <ClCompile Include="Render.cpp" />
     <ClCompile Include="render_process.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderPool.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="debugcallback.h" />
     <ClInclude Include="log.h" />
     <ClInclude Include="program.h" />
+    <ClInclude Include="Render.h" />
     <ClInclude Include="render_process.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderPool.h" />

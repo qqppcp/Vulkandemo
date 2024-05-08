@@ -5,11 +5,14 @@
 #include "ShaderPool.h"
 #include "program.h"
 #include "render_process.h"
+#include "Render.h"
 
 std::string shaderPath = R"(assets\shaders\)";
 std::unique_ptr<RenderProcess> process;
 std::unique_ptr<GPUProgram> triangle;
+std::unique_ptr<Renderer> renderer;
 std::vector<vk::Framebuffer> framebuffers;
+
 void Init()
 {
 	Context::InitContext();
@@ -20,7 +23,7 @@ void Init()
 	process->InitPipelineLayout();
 	process->InitRenderPass();
 	process->InitPipeline(triangle.get());
-	auto& swapchian = Context::GetInstance().swapchian;
+	auto& swapchian = Context::GetInstance().swapchain;
 	auto device = Context::GetInstance().device;
 	auto [width, height] = GetWindowSize();
 	for (int i = 0; i < swapchian->imageviews.size(); i++)
@@ -33,13 +36,16 @@ void Init()
 			.setHeight(height);
 		framebuffers.emplace_back(device.createFramebuffer(framebufferCI));
 	}
+	renderer.reset(new Renderer(process.get(), framebuffers));
 }
 
 void Quit()
 {
+	auto device = Context::GetInstance().device;
+	renderer.reset();
 	for (auto framebuffer : framebuffers)
 	{
-		Context::GetInstance().device.destroyFramebuffer(framebuffer);
+		device.destroyFramebuffer(framebuffer);
 	}
 	process.reset();
 	triangle.reset();
@@ -50,4 +56,5 @@ void Quit()
 
 void Render()
 {
+	renderer->render();
 }

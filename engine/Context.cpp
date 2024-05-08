@@ -35,12 +35,12 @@ void Context::Quit()
 void Context::InitSwapchain()
 {
 	auto [width, height] = GetWindowSize();
-	swapchian.reset(new Swapchain(width, height));
+	swapchain.reset(new Swapchain(width, height));
 }
 
 void Context::DestroySwapchain()
 {
-	swapchian.reset();
+	swapchain.reset();
 }
 Context& Context::GetInstance()
 {

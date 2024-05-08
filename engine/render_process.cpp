@@ -11,9 +11,9 @@ void RenderProcess::InitRenderPass()
 {
 	vk::RenderPassCreateInfo renderpassCI;
 	vk::AttachmentDescription attachment;
-	attachment.setFormat(Context::GetInstance().swapchian->info.surfaceFormat.format)
+	attachment.setFormat(Context::GetInstance().swapchain->info.surfaceFormat.format)
 		.setInitialLayout(vk::ImageLayout::eUndefined)
-		.setFinalLayout(vk::ImageLayout::eColorAttachmentOptimal)
+		.setFinalLayout(vk::ImageLayout::ePresentSrcKHR)
 		.setLoadOp(vk::AttachmentLoadOp::eClear)
 		.setStoreOp(vk::AttachmentStoreOp::eStore)
 		.setStencilLoadOp(vk::AttachmentLoadOp::eDontCare)
@@ -61,7 +61,7 @@ void RenderProcess::InitPipeline(GPUProgram* program)
 
 	vk::PipelineRasterizationStateCreateInfo rasterizerSCI;
 	rasterizerSCI.setCullMode(vk::CullModeFlagBits::eBack)
-		.setFrontFace(vk::FrontFace::eCounterClockwise)
+		.setFrontFace(vk::FrontFace::eClockwise)
 		.setRasterizerDiscardEnable(false)
 		.setPolygonMode(vk::PolygonMode::eFill)
 		.setLineWidth(1.0f);
