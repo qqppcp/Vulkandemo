@@ -6,11 +6,13 @@
 #include "program.h"
 #include "render_process.h"
 #include "Render.h"
+#include "imgui/imgui.h"
 
 std::string shaderPath = R"(assets\shaders\)";
 std::unique_ptr<RenderProcess> process;
 std::unique_ptr<GPUProgram> triangle;
 std::unique_ptr<Renderer> renderer;
+std::unique_ptr<ImGuiRenderer> imguiRenderer;
 std::vector<vk::Framebuffer> framebuffers;
 
 void Init()
@@ -37,6 +39,7 @@ void Init()
 		framebuffers.emplace_back(device.createFramebuffer(framebufferCI));
 	}
 	renderer.reset(new Renderer(process.get(), framebuffers));
+
 }
 
 void Quit()

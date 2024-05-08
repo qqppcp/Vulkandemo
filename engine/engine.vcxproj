@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="backend.cpp" />
+    <ClCompile Include="Buffer.cpp" />
     <ClCompile Include="debugcallback.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="main.cpp" />
@@ -154,6 +155,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="backend.h" />
+    <ClInclude Include="Buffer.h" />
     <ClInclude Include="Context.h" />
     <ClInclude Include="debugcallback.h" />
     <ClInclude Include="log.h" />
@@ -163,6 +165,7 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderPool.h" />
     <ClInclude Include="Swapchain.h" />
+    <ClInclude Include="Vertex.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

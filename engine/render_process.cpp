@@ -2,6 +2,8 @@
 #include "Context.h"
 #include "program.h"
 #include "window.h"
+#include "Vertex.h"
+
 void RenderProcess::InitPipelineLayout()
 {
 	vk::PipelineLayoutCreateInfo layoutCI;
@@ -42,6 +44,10 @@ void RenderProcess::InitPipeline(GPUProgram* program)
 	vk::GraphicsPipelineCreateInfo pipelineCI;
 
 	vk::PipelineVertexInputStateCreateInfo inputSCI;
+	auto attrib = Vertex::GetAttribute();
+	auto binding = Vertex::GetBinding();
+	inputSCI.setVertexAttributeDescriptions(attrib)
+		.setVertexBindingDescriptions(binding);
 	pipelineCI.setPVertexInputState(&inputSCI);
 
 	vk::PipelineInputAssemblyStateCreateInfo assemblySCI;
@@ -61,7 +67,7 @@ void RenderProcess::InitPipeline(GPUProgram* program)
 
 	vk::PipelineRasterizationStateCreateInfo rasterizerSCI;
 	rasterizerSCI.setCullMode(vk::CullModeFlagBits::eBack)
-		.setFrontFace(vk::FrontFace::eClockwise)
+		.setFrontFace(vk::FrontFace::eCounterClockwise)
 		.setRasterizerDiscardEnable(false)
 		.setPolygonMode(vk::PolygonMode::eFill)
 		.setLineWidth(1.0f);
