@@ -3,10 +3,17 @@
 #include "program.h"
 #include "window.h"
 #include "Vertex.h"
+#include "Uniform.h"
 
 void RenderProcess::InitPipelineLayout()
 {
 	vk::PipelineLayoutCreateInfo layoutCI;
+	vk::DescriptorSetLayoutCreateInfo setLayoutCI;
+	auto bindings = Uniform::GetBinding();
+	setLayoutCI.setBindings(bindings);
+	setLayout = Context::GetInstance().device.createDescriptorSetLayout(setLayoutCI);
+
+	layoutCI.setSetLayouts(setLayout);
 	layout = Context::GetInstance().device.createPipelineLayout(layoutCI);
 }
 void RenderProcess::InitRenderPass()
@@ -109,8 +116,10 @@ void RenderProcess::InitPipeline(GPUProgram* program)
 RenderProcess::~RenderProcess()
 {
 	vk::Device device = Context::GetInstance().device;
-	device.destroyRenderPass(renderPass);
+
+	device.destroyDescriptorSetLayout(setLayout);
 	device.destroyPipelineLayout(layout);
+	device.destroyRenderPass(renderPass);
 	device.destroyPipeline(pipeline);
 }
 

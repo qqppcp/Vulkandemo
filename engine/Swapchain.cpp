@@ -16,6 +16,7 @@ void Swapchain::queryInfo(uint32_t width, uint32_t height)
 	info.preTransform = capabilities.currentTransform;
 
 	auto formats = physical_device.getSurfaceFormatsKHR(surface);
+	info.surfaceFormat = formats[0];
 	for (auto format : formats)
 	{
 		if (format.format == vk::Format::eR8G8B8A8Srgb &&

@@ -165,6 +165,7 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderPool.h" />
     <ClInclude Include="Swapchain.h" />
+    <ClInclude Include="Uniform.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="window.h" />
   </ItemGroup>

@@ -5,6 +5,7 @@
 #include "window.h"
 
 #include "Vertex.h"
+#include "Uniform.h"
 
 #include "imgui/imgui.h"
 
@@ -14,6 +15,8 @@ Vertex vertices[3] = {
 	Vertex{ 0.5,  0.5, 0.0, 1.0, 0.0, 1.0},
 	Vertex{ 0  , -0.5, 0.0, 0.0, 1.0, 1.0}
 };
+Uniform uniform{ {0.6f, 0.3f, 0.4f, 1.0f} };
+
 Renderer::Renderer(RenderProcess* process, std::vector<vk::Framebuffer> framebuffers)
 	: process(process), framebuffers(framebuffers), current_frame(0)
 {
@@ -39,17 +42,27 @@ Renderer::Renderer(RenderProcess* process, std::vector<vk::Framebuffer> framebuf
 		fenceCI.setFlags(vk::FenceCreateFlagBits::eSignaled);
 		cmdbufAvaliableFences[i] = device.createFence(fenceCI);
 	}
-	vertexbuffer.reset(new Buffer(sizeof(vertices), vk::BufferUsageFlagBits::eVertexBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent));
-	void* ptr = device.mapMemory(vertexbuffer->memory, 0, sizeof(vertices));
-	memcpy(ptr, vertices, sizeof(vertices));
-	device.unmapMemory(vertexbuffer->memory);
+	createVertexBuffer();
+	createUniformBuffer();
+	vertexData();
+	uniformData();
+	createDescriptorPool();
+	allocateSets();
+	updateSets();
 }
 
 Renderer::~Renderer()
 {
 	auto& device = Context::GetInstance().device;
 	device.waitIdle();
-	vertexbuffer.reset();
+	device.destroyDescriptorPool(descriptorPool);
+	hostVertexbuffer.reset();
+	deviceVertexbuffer.reset();
+	for (int i = 0; i < hostUniformbuffers.size(); i++)
+	{
+		hostUniformbuffers[i].reset();
+		deviceUniformbuffers[i].reset();
+	}
 	for (size_t i = 0; i < maxFlight; i++)
 	{
 		device.destroyFence(cmdbufAvaliableFences[i]);
@@ -62,7 +75,7 @@ Renderer::~Renderer()
 
 void Renderer::render(float delta_time)
 {
-	auto& swapchain = Context::GetInstance().swapchain;
+ 	auto& swapchain = Context::GetInstance().swapchain;
 	auto device = Context::GetInstance().device;
 
 	if (device.waitForFences(cmdbufAvaliableFences[current_frame], true, std::numeric_limits<uint64_t>::max()) != vk::Result::eSuccess)
@@ -90,7 +103,8 @@ void Renderer::render(float delta_time)
 			.setRenderArea(VkRect2D({ 0,0 }, { width, height }))
 			.setClearValues(clear);
 		vk::DeviceSize offset = 0;
-		cmdbufs[current_frame].bindVertexBuffers(0, vertexbuffer->buffer, offset);
+		cmdbufs[current_frame].bindVertexBuffers(0, deviceVertexbuffer->buffer, offset);
+		cmdbufs[current_frame].bindDescriptorSets(vk::PipelineBindPoint::eGraphics, process->layout, 0, sets[current_frame], {});
 		cmdbufs[current_frame].beginRenderPass(renderPassBI, {});
 		cmdbufs[current_frame].draw(3, 1, 0, 0);
 	}
@@ -116,7 +130,117 @@ void Renderer::render(float delta_time)
 	current_frame = (current_frame + 1) % maxFlight;
 }
 
+void Renderer::createVertexBuffer()
+{
+	hostVertexbuffer.reset(new Buffer(sizeof(vertices), 
+		vk::BufferUsageFlagBits::eTransferSrc, 
+		vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent));
+	deviceVertexbuffer.reset(new Buffer(sizeof(vertices),
+		vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eVertexBuffer,
+		vk::MemoryPropertyFlagBits::eDeviceLocal));
+}
+void Renderer::createUniformBuffer()
+{
+	hostUniformbuffers.resize(maxFlight);
+	deviceUniformbuffers.resize(maxFlight);
 
+	for (auto& buffer : hostUniformbuffers)
+	{
+		buffer.reset(new Buffer(sizeof(uniform),
+			vk::BufferUsageFlagBits::eTransferSrc,
+			vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent));
+	}
+	for (auto& buffer : deviceUniformbuffers)
+	{
+		buffer.reset(new Buffer(sizeof(uniform),
+			vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer,
+			vk::MemoryPropertyFlagBits::eDeviceLocal));
+	}
+}
+void Renderer::vertexData()
+{
+	auto device = Context::GetInstance().device;
+	void* ptr = device.mapMemory(hostVertexbuffer->memory, 0, sizeof(vertices));
+	memcpy(ptr, vertices, sizeof(vertices));
+	device.unmapMemory(hostVertexbuffer->memory);
+	copyBuffer(hostVertexbuffer->buffer, deviceVertexbuffer->buffer, hostVertexbuffer->size, 0, 0);
+}
+void Renderer::uniformData()
+{
+	auto device = Context::GetInstance().device;
+	for (size_t i = 0; i < hostUniformbuffers.size(); i++)
+	{
+		auto& buffer = hostUniformbuffers[i];
+		void* ptr = device.mapMemory(buffer->memory, 0, sizeof(uniform));
+		memcpy(ptr, &uniform, sizeof(uniform));
+		device.unmapMemory(buffer->memory);
+		copyBuffer(buffer->buffer, deviceUniformbuffers[i]->buffer, buffer->size, 0, 0);
+	}
+}
+void Renderer::copyBuffer(vk::Buffer& src, vk::Buffer& dst, size_t size, size_t srcoffset, size_t dstoffset)
+{
+	auto device = Context::GetInstance().device;
+	vk::CommandBufferAllocateInfo bufAI;
+	bufAI.setCommandPool(cmdPool)
+		.setLevel(vk::CommandBufferLevel::ePrimary)
+		.setCommandBufferCount(1);
+	auto cmdbuf = device.allocateCommandBuffers(bufAI)[0];
+
+	vk::CommandBufferBeginInfo begin;
+	begin.setFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+	cmdbuf.begin(begin);
+	vk::BufferCopy region;
+	region.setSize(size)
+		.setSrcOffset(0)
+		.setDstOffset(0);
+	cmdbuf.copyBuffer(src, dst, region);
+	cmdbuf.end();
+	vk::SubmitInfo submitInfo;
+	submitInfo.setCommandBuffers(cmdbuf);
+	Context::GetInstance().graphicsQueue.submit(submitInfo);
+	device.waitIdle();
+	device.freeCommandBuffers(cmdPool, cmdbuf);
+}
+void Renderer::createDescriptorPool()
+{
+	vk::DescriptorPoolCreateInfo poolCI;
+	vk::DescriptorPoolSize poolsize;
+	poolsize.setDescriptorCount(maxFlight)
+		.setType(vk::DescriptorType::eUniformBuffer);
+	poolCI.setMaxSets(maxFlight)
+		.setPoolSizes(poolsize);
+	descriptorPool = Context::GetInstance().device.createDescriptorPool(poolCI);
+}
+void Renderer::allocateSets()
+{
+	std::vector<vk::DescriptorSetLayout> layouts(maxFlight, process->setLayout);
+	vk::DescriptorSetAllocateInfo setAI;
+	setAI.setDescriptorPool(descriptorPool)
+		.setDescriptorSetCount(maxFlight)
+		.setSetLayouts(layouts);
+
+	sets = Context::GetInstance().device.allocateDescriptorSets(setAI);
+}
+void Renderer::updateSets()
+{
+	for (size_t i = 0; i < sets.size(); i++)
+	{
+		auto& set = sets[i];
+		vk::DescriptorBufferInfo bufferInfo;
+		bufferInfo.setBuffer(deviceUniformbuffers[i]->buffer)
+			.setOffset(0)
+			.setRange(deviceUniformbuffers[i]->size);
+		vk::WriteDescriptorSet writer;
+		writer.setDescriptorType(vk::DescriptorType::eUniformBuffer)
+			.setBufferInfo(bufferInfo)
+			.setDstSet(set)
+			.setDstArrayElement(0)
+			.setDescriptorCount(1);
+		Context::GetInstance().device.updateDescriptorSets(writer, {});
+	}
+}
+
+//--------------------------------------//
 ImGuiRenderer::ImGuiRenderer()
 {
 	ImGui::CreateContext();

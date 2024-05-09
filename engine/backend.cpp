@@ -39,12 +39,13 @@ void Init()
 		framebuffers.emplace_back(device.createFramebuffer(framebufferCI));
 	}
 	renderer.reset(new Renderer(process.get(), framebuffers));
-
+	
 }
 
 void Quit()
 {
 	auto device = Context::GetInstance().device;
+
 	renderer.reset();
 	for (auto framebuffer : framebuffers)
 	{
