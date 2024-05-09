@@ -151,6 +151,7 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="ShaderPool.cpp" />
     <ClCompile Include="Swapchain.cpp" />
+    <ClCompile Include="UIRenderer.cpp" />
     <ClCompile Include="window.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -165,6 +166,7 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShaderPool.h" />
     <ClInclude Include="Swapchain.h" />
+    <ClInclude Include="UIRenderer.h" />
     <ClInclude Include="Uniform.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="window.h" />

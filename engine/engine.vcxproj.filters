@@ -54,6 +54,9 @@
     <ClCompile Include="Buffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="UIRenderer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Context.h">
@@ -96,6 +99,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Uniform.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="UIRenderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

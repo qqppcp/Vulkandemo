@@ -6,7 +6,7 @@
 #include "program.h"
 #include "render_process.h"
 #include "Render.h"
-#include "imgui/imgui.h"
+#include "UIRenderer.h"
 
 std::string shaderPath = R"(assets\shaders\)";
 std::unique_ptr<RenderProcess> process;

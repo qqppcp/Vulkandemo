@@ -35,10 +35,3 @@ private:
 	void allocateSets();
 	void updateSets();
 };
-
-class ImGuiRenderer
-{
-public:
-	ImGuiRenderer();
-	~ImGuiRenderer();
-};

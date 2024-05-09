@@ -51,6 +51,11 @@ inline void GetWindowSize(T& width, T& height)
     height = static_cast<T>(_height);
 }
 
+GLFWwindow* GetWindowHandle()
+{
+    return pWindow;
+}
+
 std::tuple<uint32_t, uint32_t> GetWindowSize()
 {
     return {_width, _height};
