@@ -71,10 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)renderer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(ProjectDir)imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)renderer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(ProjectDir)imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -107,7 +107,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -116,7 +116,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\vendor\lib;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;ImGui.lib;assimp-vc142-mtd.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>metis.lib;ImGui_v143.lib;glfw3.lib;assimp-vc142-mtd.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -124,7 +124,7 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -135,41 +135,84 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(SolutionDir)\vendor\lib;$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>glfw3.lib;ImGui.lib;assimp-vc142-mtd.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>metis.lib;ImGui_v143.lib;glfw3.lib;assimp-vc142-mtd.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="backend.cpp" />
-    <ClCompile Include="Buffer.cpp" />
-    <ClCompile Include="debugcallback.cpp" />
-    <ClCompile Include="log.cpp" />
+    <ClCompile Include="renderer\src\backend.cpp" />
+    <ClCompile Include="bit_array.cpp" />
+    <ClCompile Include="bounds.cpp" />
+    <ClCompile Include="renderer\src\Buffer.cpp" />
+    <ClCompile Include="cluster.cpp" />
+    <ClCompile Include="core\src\application.cpp" />
+    <ClCompile Include="renderer\src\CommandBuffer.cpp" />
+    <ClCompile Include="renderer\src\debugcallback.cpp" />
+    <ClCompile Include="hash_table.cpp" />
+    <ClCompile Include="heap.cpp" />
+    <ClCompile Include="imgui\FrameTimeInfo.cpp" />
+    <ClCompile Include="FrameTimer.cpp" />
+    <ClCompile Include="glad.c" />
+    <ClCompile Include="imgui\ImGuiBase.cpp" />
+    <ClCompile Include="imgui\ImGuiState.cpp" />
+    <ClCompile Include="core\src\log.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Context.cpp" />
-    <ClCompile Include="program.cpp" />
-    <ClCompile Include="Render.cpp" />
-    <ClCompile Include="render_process.cpp" />
-    <ClCompile Include="Shader.cpp" />
-    <ClCompile Include="ShaderPool.cpp" />
-    <ClCompile Include="Swapchain.cpp" />
-    <ClCompile Include="UIRenderer.cpp" />
-    <ClCompile Include="window.cpp" />
+    <ClCompile Include="renderer\src\Context.cpp" />
+    <ClCompile Include="mesh.cpp" />
+    <ClCompile Include="mesh_simplify.cpp" />
+    <ClCompile Include="partitioner.cpp" />
+    <ClCompile Include="renderer\src\Pipeline.cpp" />
+    <ClCompile Include="renderer\src\program.cpp" />
+    <ClCompile Include="renderer\src\render_process.cpp" />
+    <ClCompile Include="renderer\src\Sampler.cpp" />
+    <ClCompile Include="renderer\src\Shader.cpp" />
+    <ClCompile Include="renderer\src\ShaderPool.cpp" />
+    <ClCompile Include="renderer\src\Texture.cpp" />
+    <ClCompile Include="stb_image.cpp" />
+    <ClCompile Include="renderer\src\Swapchain.cpp" />
+    <ClCompile Include="imgui\termination.cpp" />
+    <ClCompile Include="renderer\src\UIRenderer.cpp" />
+    <ClCompile Include="core\src\window.cpp" />
+    <ClCompile Include="core\src\event.cpp" />
+    <ClCompile Include="core\src\input.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="backend.h" />
-    <ClInclude Include="Buffer.h" />
-    <ClInclude Include="Context.h" />
-    <ClInclude Include="debugcallback.h" />
-    <ClInclude Include="log.h" />
-    <ClInclude Include="program.h" />
-    <ClInclude Include="Render.h" />
-    <ClInclude Include="render_process.h" />
-    <ClInclude Include="Shader.h" />
-    <ClInclude Include="ShaderPool.h" />
-    <ClInclude Include="Swapchain.h" />
-    <ClInclude Include="UIRenderer.h" />
+    <ClInclude Include="renderer\backend.h" />
+    <ClInclude Include="bit_array.h" />
+    <ClInclude Include="bounds.h" />
+    <ClInclude Include="renderer\Buffer.h" />
+    <ClInclude Include="core\camera.h" />
+    <ClInclude Include="cluster.h" />
+    <ClInclude Include="renderer\CommandBuffer.h" />
+    <ClInclude Include="renderer\Context.h" />
+    <ClInclude Include="core\application.h" />
+    <ClInclude Include="renderer\debugcallback.h" />
+    <ClInclude Include="hash_table.h" />
+    <ClInclude Include="heap.h" />
+    <ClInclude Include="imgui\FrameTimeInfo.h" />
+    <ClInclude Include="FrameTimer.h" />
+    <ClInclude Include="imgui\ImGuiBase.h" />
+    <ClInclude Include="imgui\ImGuiState.h" />
+    <ClInclude Include="core\log.h" />
+    <ClInclude Include="mesh.h" />
+    <ClInclude Include="mesh_simplify.h" />
+    <ClInclude Include="mesh_util.h" />
+    <ClInclude Include="partitioner.h" />
+    <ClInclude Include="renderer\Pipeline.h" />
+    <ClInclude Include="renderer\program.h" />
+    <ClInclude Include="renderer\render_process.h" />
+    <ClInclude Include="renderer\Sampler.h" />
+    <ClInclude Include="renderer\Shader.h" />
+    <ClInclude Include="renderer\ShaderPool.h" />
+    <ClInclude Include="renderer\Swapchain.h" />
+    <ClInclude Include="imgui\termination.h" />
+    <ClInclude Include="renderer\Texture.h" />
+    <ClInclude Include="renderer\UIRenderer.h" />
     <ClInclude Include="Uniform.h" />
     <ClInclude Include="Vertex.h" />
-    <ClInclude Include="window.h" />
+    <ClInclude Include="virtual_mesh.h" />
+    <ClInclude Include="core\window.h" />
+    <ClInclude Include="core\event.h" />
+    <ClInclude Include="core\input.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

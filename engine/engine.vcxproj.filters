@@ -18,90 +18,219 @@
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Context.cpp">
+    <ClCompile Include="renderer\src\Context.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="window.cpp">
+    <ClCompile Include="core\src\window.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="debugcallback.cpp">
+    <ClCompile Include="core\src\log.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="log.cpp">
+    <ClCompile Include="renderer\src\Swapchain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Swapchain.cpp">
+    <ClCompile Include="renderer\src\ShaderPool.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderPool.cpp">
+    <ClCompile Include="renderer\src\Shader.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
+    <ClCompile Include="renderer\src\render_process.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="render_process.cpp">
+    <ClCompile Include="renderer\src\program.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="program.cpp">
+    <ClCompile Include="renderer\src\backend.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="backend.cpp">
+    <ClCompile Include="renderer\src\Buffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Render.cpp">
+    <ClCompile Include="renderer\src\UIRenderer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Buffer.cpp">
+    <ClCompile Include="renderer\src\debugcallback.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="UIRenderer.cpp">
+    <ClCompile Include="glad.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\ImGuiBase.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameTimer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\termination.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\FrameTimeInfo.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\ImGuiState.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="bounds.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="cluster.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="hash_table.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="partitioner.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh_simplify.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="bit_array.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="heap.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="core\src\input.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="core\src\event.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="core\src\application.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\src\Texture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\src\CommandBuffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\src\Sampler.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\src\Pipeline.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Context.h">
+    <ClInclude Include="renderer\Context.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="window.h">
+    <ClInclude Include="core\window.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="debugcallback.h">
+    <ClInclude Include="renderer\debugcallback.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="log.h">
+    <ClInclude Include="core\log.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Swapchain.h">
+    <ClInclude Include="renderer\Swapchain.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Shader.h">
+    <ClInclude Include="renderer\Shader.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ShaderPool.h">
+    <ClInclude Include="renderer\ShaderPool.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="render_process.h">
+    <ClInclude Include="renderer\render_process.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="program.h">
+    <ClInclude Include="renderer\program.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="backend.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Render.h">
+    <ClInclude Include="renderer\backend.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Vertex.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Buffer.h">
+    <ClInclude Include="renderer\Buffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Uniform.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="UIRenderer.h">
+    <ClInclude Include="renderer\UIRenderer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\ImGuiBase.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameTimer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\termination.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\FrameTimeInfo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\ImGuiState.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="bounds.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="cluster.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="hash_table.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="partitioner.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh_util.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh_simplify.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="bit_array.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="heap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="virtual_mesh.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="core\camera.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="core\input.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="core\event.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="core\application.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\Texture.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\CommandBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\Sampler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\Pipeline.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

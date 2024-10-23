@@ -1,16 +1,9 @@
-#include "window.h"
-#include "backend.h"
+#include "application.h"
 
 int main(int argc, char** argv)
 {
-	CreateWindow(1280, 720, "demo");
-	Init();
-	while (!WindowShouleClose())
-	{
-		Render();
-		WindowEventProcessing();
-	}
-	Quit();
-	DestroyWindow();
+	Application* app = new Application(1280, 720);
+	app->run();
+	delete app;
 	return 0;
 }
