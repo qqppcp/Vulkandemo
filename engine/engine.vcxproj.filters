@@ -120,6 +120,15 @@
     <ClCompile Include="renderer\src\Pipeline.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="layer\src\modelforwardLayer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="core\src\camera.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="layer\src\imguiLayer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\Context.h">
@@ -231,6 +240,18 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="renderer\Pipeline.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="layer\layer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="layer\modelforwardLayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="layer\src\define.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="layer\imguiLayer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

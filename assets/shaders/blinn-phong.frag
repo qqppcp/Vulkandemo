@@ -60,7 +60,7 @@ void main()
 
     float costheta = max(dot(normal, lightDir), 0.0);
     vec3 kd = material.Kd_dissolve.rgb;
-    vec3 diffuse = kd * costheta * diffuseColor * color.rgb;
+    vec3 diffuse = kd * costheta * diffuseColor * ubo.color.rgb;
 
     vec3 specular = vec3(0);
     if (material.specularTextureId != -1)
@@ -70,9 +70,8 @@ void main()
         vec3 ks = material.Ks_shininess.rgb;
         vec3 halfDir = normalize(lightDir + viewDir);
         float spec = pow(max(dot(normal, halfDir), 0.0), shiness);
-        specular = ks * spec * texture(image[material.specularTextureId], flow.texCoord).rgb * color.rgb;
+        specular = ks * spec * texture(image[material.specularTextureId], flow.texCoord).rgb * ubo.color.rgb;
     }
     
     FragColor = vec4(ambient + diffuse + specular, 1.0);
-    FragColor = vec4(color.rgb, 1.0);
 }

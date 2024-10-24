@@ -174,4 +174,11 @@ inline void ProcessInput(Camera& camera, float _deltatime)
 	}
 }
 
+class CameraManager
+{
+public:
+	static std::shared_ptr<Camera> mainCamera;
+	static void init(glm::vec3 position);
+};
+
 #endif

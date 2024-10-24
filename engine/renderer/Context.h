@@ -6,6 +6,8 @@
 #include <memory>
 #include <optional>
 
+class Texture;
+
 class Context final {
 public:
 	~Context();
@@ -20,6 +22,8 @@ public:
 	vk::Queue computeQueue;
 	vk::Queue transferQueue;
 
+	std::vector<vk::CommandBuffer> cmdbufs;
+	std::shared_ptr<Texture> depth;
 	vk::CommandPool graphicsCmdPool;
 	vk::SurfaceKHR surface;
 	vk::PhysicalDevice physicaldevice;

@@ -71,10 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)renderer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(ProjectDir)imgui;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)renderer;$(ProjectDir)layer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(ProjectDir)imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)renderer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(ProjectDir)imgui;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)layer;$(ProjectDir)renderer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(ProjectDir)imgui;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -139,6 +139,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="core\src\camera.cpp" />
+    <ClCompile Include="layer\src\imguiLayer.cpp" />
+    <ClCompile Include="layer\src\modelforwardLayer.cpp" />
     <ClCompile Include="renderer\src\backend.cpp" />
     <ClCompile Include="bit_array.cpp" />
     <ClCompile Include="bounds.cpp" />
@@ -176,6 +179,10 @@
     <ClCompile Include="core\src\input.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="layer\imguiLayer.h" />
+    <ClInclude Include="layer\layer.h" />
+    <ClInclude Include="layer\modelforwardLayer.h" />
+    <ClInclude Include="layer\src\define.h" />
     <ClInclude Include="renderer\backend.h" />
     <ClInclude Include="bit_array.h" />
     <ClInclude Include="bounds.h" />

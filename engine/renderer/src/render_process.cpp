@@ -155,7 +155,9 @@ void RenderProcess::DestroyPipeline()
 	Context::GetInstance().device.destroyPipeline(pipeline);
 }
 
-RenderPass::RenderPass(const std::vector<std::shared_ptr<Texture>> attachments, const std::vector<std::shared_ptr<Texture>> resolveAttachments, const std::vector<vk::AttachmentLoadOp>& loadOp, const std::vector<vk::AttachmentStoreOp>& storeOp, const std::vector<vk::ImageLayout>& layout, vk::PipelineBindPoint bindPoint, const std::string& name)
+RenderPass::RenderPass(const std::vector<std::shared_ptr<Texture>> attachments, const std::vector<std::shared_ptr<Texture>> resolveAttachments, 
+	const std::vector<vk::AttachmentLoadOp>& loadOp, const std::vector<vk::AttachmentStoreOp>& storeOp, 
+	const std::vector<vk::ImageLayout>& layout, vk::PipelineBindPoint bindPoint, const std::string& name)
 {
 	std::vector<vk::AttachmentDescription> attachmentDescriptors;
 	std::vector<vk::AttachmentReference> colorAttachmentReferences;
@@ -256,7 +258,12 @@ RenderPass::RenderPass(const std::vector<std::shared_ptr<Texture>> attachments, 
 	renderPass = Context::GetInstance().device.createRenderPass(renderPassCI);
 }
 
-RenderPass::RenderPass(const std::vector<vk::Format>& formats, const std::vector<vk::ImageLayout>& initialLayouts, const std::vector<vk::ImageLayout>& finalLayouts, const std::vector<vk::AttachmentLoadOp>& loadOp, const std::vector<vk::AttachmentStoreOp>& storeOp, vk::PipelineBindPoint bindPoint, std::vector<uint32_t> resolveAttachmentsIndices, uint32_t depthAttachmentIndex, uint32_t stencilAttachmentIndex, vk::AttachmentLoadOp stencilLoadOp, vk::AttachmentStoreOp stencilStoreOp, bool multiView, const std::string& name)
+RenderPass::RenderPass(const std::vector<vk::Format>& formats, 
+	const std::vector<vk::ImageLayout>& initialLayouts, const std::vector<vk::ImageLayout>& finalLayouts, 
+	const std::vector<vk::AttachmentLoadOp>& loadOp, const std::vector<vk::AttachmentStoreOp>& storeOp, 
+	vk::PipelineBindPoint bindPoint, std::vector<uint32_t> resolveAttachmentsIndices, 
+	uint32_t depthAttachmentIndex, uint32_t stencilAttachmentIndex, 
+	vk::AttachmentLoadOp stencilLoadOp, vk::AttachmentStoreOp stencilStoreOp, bool multiView, const std::string& name)
 {
 	const bool sameSizes =
 		formats.size() == initialLayouts.size() && formats.size() == finalLayouts.size() &&

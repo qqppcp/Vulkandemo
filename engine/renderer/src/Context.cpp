@@ -2,6 +2,8 @@
 #include "window.h"
 #include "debugcallback.h"
 #include "log.h"
+#include "Texture.h"
+#include "CommandBuffer.h"
 
 #include <string>
 #include <format>
@@ -42,10 +44,16 @@ void Context::InitSwapchain()
 {
 	auto [width, height] = GetWindowSize();
 	swapchain.reset(new Swapchain(width, height));
+	depth = TextureManager::Instance().Create(width, height, vk::Format::eD24UnormS8Uint);
+	uint32_t maxFlight = Context::GetInstance().swapchain->info.imageCount;
+	cmdbufs = CommandManager::Allocate(graphicsCmdPool, maxFlight, true);
 }
 
 void Context::DestroySwapchain()
 {
+	CommandManager::Free(graphicsCmdPool, cmdbufs);
+	TextureManager::Instance().Destroy(depth);
+	depth.reset();
 	swapchain.reset();
 }
 Context& Context::GetInstance()
