@@ -48,28 +48,25 @@
     <ClCompile Include="renderer\src\Buffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="renderer\src\UIRenderer.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="renderer\src\debugcallback.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="glad.c">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\ImGuiBase.cpp">
+    <ClCompile Include="imgui\src\ImGuiBase.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="FrameTimer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\termination.cpp">
+    <ClCompile Include="imgui\src\termination.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\FrameTimeInfo.cpp">
+    <ClCompile Include="imgui\src\FrameTimeInfo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="imgui\ImGuiState.cpp">
+    <ClCompile Include="imgui\src\ImGuiState.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="bounds.cpp">
@@ -129,6 +126,24 @@
     <ClCompile Include="layer\src\imguiLayer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="imgui\src\select.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="layer\src\layerFactory.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\src\convert2Cubemap.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer\src\define.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="layer\src\skyboxLayer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="core\src\geometry.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\Context.h">
@@ -165,12 +180,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="renderer\Buffer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Uniform.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="renderer\UIRenderer.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="imgui\ImGuiBase.h">
@@ -248,10 +257,25 @@
     <ClInclude Include="layer\modelforwardLayer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="layer\src\define.h">
+    <ClInclude Include="define.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="layer\imguiLayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\select.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="layer\layerFactory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\convert2Cubemap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="layer\skyboxLayer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="core\geometry.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

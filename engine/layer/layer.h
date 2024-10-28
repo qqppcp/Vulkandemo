@@ -12,7 +12,6 @@ public:
 	virtual void OnDetach() {}
 	virtual void OnUpdate(float _deltatime) {}
 	virtual void OnRender() {}
-	virtual void OnImguiRender() {}
 	virtual void OnEvent() {}
 
 	inline const std::string& GetName() const { return m_LayerName; }

@@ -25,20 +25,6 @@ struct Mesh
 	std::vector<std::shared_ptr<Texture>> textures;
 	std::vector<Material> materials;
 	std::string directory;
-	static auto Vertex_Desc()
-	{
-		vk::VertexInputAttributeDescription attr;
-		attr.setBinding(0)
-			.setFormat(vk::Format::eR32G32B32Sfloat)
-			.setLocation(0)
-			.setOffset(0);
-
-		vk::VertexInputBindingDescription binding;
-		binding.setBinding(0)
-			.setInputRate(vk::VertexInputRate::eVertex)
-			.setStride(sizeof(glm::vec3));
-		return std::tuple{ attr, binding };
-	}
 	~Mesh();
 	void load(std::string path);
 	void loadobj(std::string path);

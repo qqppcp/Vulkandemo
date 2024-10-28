@@ -1,25 +1,9 @@
 #pragma once
 
-#include "vulkan/vulkan.hpp"
+#include <vulkan/vulkan.hpp>
 
 class GPUProgram;
-
 class Texture;
-
-class RenderProcess final {
-public:
-	vk::Pipeline pipeline;
-	vk::PipelineLayout layout;
-	vk::RenderPass renderPass;
-
-	std::array<vk::DescriptorSetLayout, 2> setlayouts;
-	void InitPipelineLayout();
-	void InitRenderPass();
-	void InitPipeline(GPUProgram*);
-	~RenderProcess();
-	void DestroyPipeline();
-
-};
 
 class RenderPass final
 {

@@ -10,6 +10,9 @@
 #include "window.h"
 #include "camera.h"
 
+#include <imgui.h>
+#include <glm/gtc/type_ptr.hpp>
+
 namespace
 {
 	std::vector<vk::Framebuffer> framebuffers;
@@ -19,7 +22,7 @@ namespace
 
 ModelForwardLayer::ModelForwardLayer(std::string_view path)
 {
-	uniform.color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	blinn_phong.reset(new GPUProgram(shaderPath + "blinn-phong.vert.spv", shaderPath + "blinn-phong.frag.spv"));
 	mesh.reset(new Mesh);
 	mesh->loadobj(path.data());
@@ -34,7 +37,7 @@ ModelForwardLayer::ModelForwardLayer(std::string_view path)
 	UploadBufferData({}, vertexBuffer, mesh->vertices.size() * sizeof(Vertex), mesh->vertices.data());
 	UploadBufferData({}, indiceBuffer, mesh->indices.size() * sizeof(std::uint32_t), mesh->indices.data());
 	UploadBufferData({}, materialBuffer, mesh->materials.size() * sizeof(Material), mesh->materials.data());
-	UploadBufferData({}, uniformBuffer, sizeof(glm::vec4), &uniform.color[0]);
+	UploadBufferData({}, uniformBuffer, sizeof(glm::vec4), &color[0]);
 	{
 		sampler.reset(new Sampler(vk::Filter::eLinear, vk::Filter::eLinear,
 			vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat,
@@ -45,7 +48,7 @@ ModelForwardLayer::ModelForwardLayer(std::string_view path)
 			std::vector<vk::ImageLayout>{vk::ImageLayout::eUndefined, vk::ImageLayout::eUndefined},
 			std::vector<vk::ImageLayout>{vk::ImageLayout::ePresentSrcKHR, vk::ImageLayout::eDepthStencilAttachmentOptimal },
 			std::vector<vk::AttachmentLoadOp>{vk::AttachmentLoadOp::eClear, vk::AttachmentLoadOp::eClear},
-			std::vector<vk::AttachmentStoreOp>{vk::AttachmentStoreOp::eStore, vk::AttachmentStoreOp::eDontCare},
+			std::vector<vk::AttachmentStoreOp>{vk::AttachmentStoreOp::eStore, vk::AttachmentStoreOp::eStore},
 			vk::PipelineBindPoint::eGraphics, {}, 1));
 	}
 	{
@@ -188,7 +191,7 @@ void ModelForwardLayer::OnUpdate(float _deltatime)
 
 void ModelForwardLayer::OnRender()
 {
-	memcpy(ptr, glm::value_ptr(uniform.color), sizeof(glm::vec4));
+	memcpy(ptr, glm::value_ptr(color), sizeof(glm::vec4));
 	CopyBuffer(stageBuffer->buffer, uniformBuffer->buffer, sizeof(glm::vec4), 0, 0);
 	auto current_frame = Context::GetInstance().current_frame;
 	auto& cmdbufs = Context::GetInstance().cmdbufs;
@@ -225,6 +228,16 @@ void ModelForwardLayer::OnRender()
 	cmdbufs[current_frame].endRenderPass();
 }
 
-void ModelForwardLayer::OnImguiRender()
+void ModelForwardLayer::customUI()
 {
-}
+	if (!isOpen)
+	{
+		return;
+	}
+
+	if (ImGui::CollapsingHeader("ModelForwardLayer", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::ColorEdit3("Light Color", glm::value_ptr(color));
+	}
+	
+};

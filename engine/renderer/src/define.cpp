@@ -1,5 +1,4 @@
-#pragma once
-#include <string>
+#include "define.h"
 
 std::string shaderPath = R"(assets\shaders\)";
 std::string texturePath = R"(assets\textures\)";

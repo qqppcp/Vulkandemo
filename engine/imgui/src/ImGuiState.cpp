@@ -76,8 +76,13 @@ void ImGuiState::runUI()
     ImGui::EndMainMenuBar();
 
     // Custom UI
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+    ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoTitleBar);
+    ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize);
     for (auto* it : mUI)
     {
         it->customUI();
     }
+    ImGui::End();
+    ImGui::PopStyleVar();
 }

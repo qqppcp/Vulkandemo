@@ -14,7 +14,6 @@ public:
 
 private:
     std::mutex mSync;
-
+    
     std::vector<ImGuiBase*> mUI;
-
 };

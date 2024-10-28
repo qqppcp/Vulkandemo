@@ -14,17 +14,17 @@
 #include "FrameTimer.h"
 #include "program.h"
 #include "render_process.h"
-#include "UIRenderer.h"
 #include "ImGuiState.h"
 #include "termination.h"
 #include "FrameTimeInfo.h"
 #include "CommandBuffer.h"
-#include "Uniform.h"
+#include "geometry.h"
 #include "camera.h"
 #include "Texture.h"
 #include "Sampler.h"
 #include "Pipeline.h"
 #include "modelforwardLayer.h"
+#include "skyboxLayer.h"
 #include "imguiLayer.h"
 
 bool app_on_event(unsigned short code, void* sender, void* listener_inst, EventContext context);
@@ -46,6 +46,7 @@ namespace
 	std::string texturePath = R"(assets\textures\)";
 	std::string modelPath = R"(assets\models\)";
 	std::shared_ptr<ModelForwardLayer> layer;
+	std::shared_ptr<SkyboxLayer> skyboxLayer;
 	std::shared_ptr<ImGuiLayer> uiLayer;
 	float rot = 180;
 }
@@ -62,6 +63,7 @@ Application::Application(int width, int height, std::string name)
 	}
 	EventManager::Init();
 	InputManager::Init();
+	GeometryManager::Init();
 	EventManager::GetInstance().Register(EVENTCODE::APPLICATION_QUIT, nullptr, app_on_event);
 	EventManager::GetInstance().Register(EVENTCODE::KEY_PRESSED, nullptr, app_on_key);
 	EventManager::GetInstance().Register(EVENTCODE::KEY_RELEASED, nullptr, app_on_key);
@@ -70,16 +72,19 @@ Application::Application(int width, int height, std::string name)
 	CreateWindow(width, height, name.data());
 	VulkanBackend::Init();
 	layer.reset(new ModelForwardLayer(modelPath + "nanosuit_reflect/nanosuit.obj"));
+	skyboxLayer.reset(new SkyboxLayer(texturePath + "skybox.hdr"));
 	uiLayer.reset(new ImGuiLayer());
 	uiLayer->addUI(GetTermination());
 	uiLayer->addUI(new ImGuiFrameTimeInfo(&state.timer));
-	uiLayer->addUI(layer->GetUI());
+	uiLayer->addUI(layer.get());
+
 }
 
 Application::~Application()
 {
 	auto device = Context::GetInstance().device;
 	uiLayer.reset();
+	skyboxLayer.reset();
 	layer.reset();
 	VulkanBackend::Quit();
 	DestroyWindow();
@@ -87,6 +92,7 @@ Application::~Application()
 	EventManager::GetInstance().Unregister(EVENTCODE::KEY_PRESSED, nullptr, app_on_key);
 	EventManager::GetInstance().Unregister(EVENTCODE::KEY_RELEASED, nullptr, app_on_key);
 	EventManager::GetInstance().Unregister(EVENTCODE::RESIZED, nullptr, app_on_resized);
+	GeometryManager::Quit();
 	InputManager::Shutdown();
 	EventManager::Shutdown();
 }
@@ -123,6 +129,7 @@ void Application::run()
 		}
 		VulkanBackend::BeginFrame(deltatime.count() / 1000.0, cmdbufs[current_frame], cmdbufAvaliableFences[current_frame], imageAvaliables[current_frame]);
 		layer->OnRender();
+		skyboxLayer->OnRender();
 		uiLayer->OnRender();
 
 		VulkanBackend::EndFrame(deltatime.count() / 1000.0, cmdbufs[current_frame], cmdbufAvaliableFences[current_frame], imageAvaliables[current_frame], imageDrawFinishs[current_frame]);

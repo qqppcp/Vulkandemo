@@ -71,10 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)renderer;$(ProjectDir)layer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(ProjectDir)imgui;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)imgui;$(ProjectDir)renderer;$(ProjectDir)layer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)layer;$(ProjectDir)renderer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(ProjectDir)imgui;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)layer;$(ProjectDir)renderer;$(ProjectDir)imgui;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -128,6 +128,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,8 +141,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="core\src\camera.cpp" />
+    <ClCompile Include="core\src\geometry.cpp" />
+    <ClCompile Include="imgui\src\select.cpp" />
     <ClCompile Include="layer\src\imguiLayer.cpp" />
+    <ClCompile Include="layer\src\layerFactory.cpp" />
     <ClCompile Include="layer\src\modelforwardLayer.cpp" />
+    <ClCompile Include="layer\src\skyboxLayer.cpp" />
     <ClCompile Include="renderer\src\backend.cpp" />
     <ClCompile Include="bit_array.cpp" />
     <ClCompile Include="bounds.cpp" />
@@ -149,20 +154,22 @@
     <ClCompile Include="cluster.cpp" />
     <ClCompile Include="core\src\application.cpp" />
     <ClCompile Include="renderer\src\CommandBuffer.cpp" />
+    <ClCompile Include="renderer\src\convert2Cubemap.cpp" />
     <ClCompile Include="renderer\src\debugcallback.cpp" />
     <ClCompile Include="hash_table.cpp" />
     <ClCompile Include="heap.cpp" />
-    <ClCompile Include="imgui\FrameTimeInfo.cpp" />
+    <ClCompile Include="imgui\src\FrameTimeInfo.cpp" />
     <ClCompile Include="FrameTimer.cpp" />
     <ClCompile Include="glad.c" />
-    <ClCompile Include="imgui\ImGuiBase.cpp" />
-    <ClCompile Include="imgui\ImGuiState.cpp" />
+    <ClCompile Include="imgui\src\ImGuiBase.cpp" />
+    <ClCompile Include="imgui\src\ImGuiState.cpp" />
     <ClCompile Include="core\src\log.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="renderer\src\Context.cpp" />
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="mesh_simplify.cpp" />
     <ClCompile Include="partitioner.cpp" />
+    <ClCompile Include="renderer\src\define.cpp" />
     <ClCompile Include="renderer\src\Pipeline.cpp" />
     <ClCompile Include="renderer\src\program.cpp" />
     <ClCompile Include="renderer\src\render_process.cpp" />
@@ -172,17 +179,20 @@
     <ClCompile Include="renderer\src\Texture.cpp" />
     <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="renderer\src\Swapchain.cpp" />
-    <ClCompile Include="imgui\termination.cpp" />
-    <ClCompile Include="renderer\src\UIRenderer.cpp" />
+    <ClCompile Include="imgui\src\termination.cpp" />
     <ClCompile Include="core\src\window.cpp" />
     <ClCompile Include="core\src\event.cpp" />
     <ClCompile Include="core\src\input.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="core\geometry.h" />
+    <ClInclude Include="imgui\select.h" />
     <ClInclude Include="layer\imguiLayer.h" />
     <ClInclude Include="layer\layer.h" />
+    <ClInclude Include="layer\layerFactory.h" />
     <ClInclude Include="layer\modelforwardLayer.h" />
-    <ClInclude Include="layer\src\define.h" />
+    <ClInclude Include="define.h" />
+    <ClInclude Include="layer\skyboxLayer.h" />
     <ClInclude Include="renderer\backend.h" />
     <ClInclude Include="bit_array.h" />
     <ClInclude Include="bounds.h" />
@@ -192,6 +202,7 @@
     <ClInclude Include="renderer\CommandBuffer.h" />
     <ClInclude Include="renderer\Context.h" />
     <ClInclude Include="core\application.h" />
+    <ClInclude Include="renderer\convert2Cubemap.h" />
     <ClInclude Include="renderer\debugcallback.h" />
     <ClInclude Include="hash_table.h" />
     <ClInclude Include="heap.h" />
@@ -213,8 +224,6 @@
     <ClInclude Include="renderer\Swapchain.h" />
     <ClInclude Include="imgui\termination.h" />
     <ClInclude Include="renderer\Texture.h" />
-    <ClInclude Include="renderer\UIRenderer.h" />
-    <ClInclude Include="Uniform.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="virtual_mesh.h" />
     <ClInclude Include="core\window.h" />

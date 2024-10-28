@@ -1,6 +1,7 @@
 #pragma once
 #include "layer.h"
-#include "Uniform.h"
+#include "ImGuiBase.h"
+#include <glm/glm.hpp>
 #include <memory>
 
 class GPUProgram;
@@ -8,20 +9,21 @@ class Sampler;
 class Buffer;
 class RenderPass;
 class Pipeline;
-class Mesh;
+struct Mesh;
 
-class ModelForwardLayer : public Layer
+class ModelForwardLayer : public Layer, public ImGuiBase
 {
 public:
 	ModelForwardLayer(std::string_view path);
 	~ModelForwardLayer();
 	virtual void OnUpdate(float _deltatime = 0) override;
 	virtual void OnRender() override;
-	virtual void OnImguiRender() override;
 	std::shared_ptr<RenderPass> getRenderPass() { return renderPass; }
-	Uniform* GetUI() { return &uniform; }
+	virtual void customUI() override;
+
 private:
-	Uniform uniform;
+	glm::vec4 color;
+	bool isOpen{ true };
 	std::unique_ptr<GPUProgram> blinn_phong;
 	std::shared_ptr<Sampler> sampler;
 	std::unique_ptr<Mesh> mesh;

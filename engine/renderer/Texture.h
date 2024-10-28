@@ -23,6 +23,7 @@ public:
 
 private:
     Texture(std::string_view filename);
+    Texture(std::string_view filename, vk::Format format);
 
     Texture(void* data, uint32_t w, uint32_t h);
     Texture(uint32_t w, uint32_t h, vk::Format format);
@@ -36,7 +37,7 @@ private:
     void transitionImageLayoutFromUndefine2Opt(vk::CommandBuffer buffer);
     void transformData2Image(vk::CommandBuffer cmdbuf, Buffer&, uint32_t w, uint32_t h);
 
-    void init(void* data, uint32_t w, uint32_t h);
+    void init(void* data, uint32_t w, uint32_t h, uint32_t channel, vk::Format format);
 };
 
 class TextureManager final {
@@ -49,6 +50,7 @@ public:
     }
 
     std::shared_ptr<Texture> Load(const std::string& filename);
+    std::shared_ptr<Texture> LoadHDRCubemap(const std::string& filename, vk::Format format);
 
     // data must be a RGBA8888 format data
     std::shared_ptr<Texture> Create(void* data, uint32_t w, uint32_t h);

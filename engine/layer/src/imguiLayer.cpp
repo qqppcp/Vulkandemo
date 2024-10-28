@@ -71,6 +71,7 @@ ImGuiLayer::~ImGuiLayer()
 
 void ImGuiLayer::OnRender()
 {
+	// Start the Dear ImGui frame
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();

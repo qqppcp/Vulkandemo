@@ -11,10 +11,10 @@ class ImGuiLayer : public Layer
 public:
 	ImGuiLayer();
 	~ImGuiLayer();
-	virtual 
 	virtual void OnRender() override;
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
+
 	void addUI(ImGuiBase* pUI);
 
 private:

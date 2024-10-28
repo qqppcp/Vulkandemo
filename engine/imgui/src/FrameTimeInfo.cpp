@@ -22,12 +22,12 @@ void ImGuiFrameTimeInfo::customUI()
         return;
     }
 
-    ImGui::SetNextWindowSize(ImVec2(0, 0), ImGuiWindowFlags_NoScrollbar);
-    ImGui::Begin("Frame Time Info", &mOpen);
-
-    ImGui::Text("%.2f ms/frame (%.1f fps)",
-        (double)mFrameTimer->averageFrameTime<std::chrono::nanoseconds>().count() /
-        1000000., mFrameTimer->framePerSecond());
-
-    ImGui::End();
+    if (ImGui::CollapsingHeader("Frame Time Info", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        ImGui::Indent(10.0f);
+        ImGui::Text("%.2f ms/frame (%.1f fps)",
+            (double)mFrameTimer->averageFrameTime<std::chrono::nanoseconds>().count() /
+            1000000., mFrameTimer->framePerSecond());
+        ImGui::Unindent(10.0f);
+    }
 }

@@ -8,8 +8,8 @@ public:
     ImGuiFrameTimeInfo(FrameTimer* pFrameTimer);
 
 private:
-    void viewMainMenu() final;
-    void customUI() final;
+    virtual void viewMainMenu() final;
+    virtual void customUI() final;
 
     FrameTimer const* const mFrameTimer;
 

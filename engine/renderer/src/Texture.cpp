@@ -1,10 +1,18 @@
 #include "Texture.h"
 #include <stb_image.h>
+#include <format>
 
 #include "Context.h"
 #include "CommandBuffer.h"
+#include "convert2Cubemap.h"
+
+namespace
+{
+    std::string extFormat = ".hdr";
+}
 
 Texture::Texture(std::string_view filename) {
+    stbi_set_flip_vertically_on_load(true);
     int w, h, channel;
     stbi_uc* pixels = stbi_load(filename.data(), &w, &h, &channel, STBI_rgb_alpha);
     size_t size = w * h * 4;
@@ -13,13 +21,46 @@ Texture::Texture(std::string_view filename) {
         throw std::runtime_error("image load failed");
     }
 
-    init(pixels, w, h);
+    init(pixels, w, h, 4, vk::Format::eR8G8B8A8Srgb);
 
     stbi_image_free(pixels);
 }
 
+Texture::Texture(std::string_view filename, vk::Format format)
+{
+    stbi_set_flip_vertically_on_load(true);
+    int width, height, nrComponents;
+    float* data = stbi_loadf(filename.data(), &width, &height, &nrComponents, STBI_rgb_alpha);
+    if (!data)
+    {
+        throw std::runtime_error("image load failed");
+    }
+    vk::ImageFormatProperties formatProperties;
+    vk::PhysicalDeviceImageFormatInfo2 formatInfo;
+    formatInfo.setFormat(vk::Format::eR32G32B32A32Sfloat)
+        .setType(vk::ImageType::e2D)
+        .setTiling(vk::ImageTiling::eOptimal)
+        .setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
+    vk::ImageFormatProperties2 properties;
+    auto result = Context::GetInstance().physicaldevice.getImageFormatProperties2(&formatInfo, &properties);
+
+    std::shared_ptr<Texture> temp;
+    temp.reset(new Texture());
+    temp->init(data, width, height, 4 * sizeof(float), vk::Format::eR32G32B32A32Sfloat);
+    stbi_image_free(data);
+    auto ret = convert2Cubemap(temp); 
+    this->image = ret->image;
+    this->view = ret->view;
+    this->memory = ret->memory;
+    ret->image = VK_NULL_HANDLE;
+    ret->view = VK_NULL_HANDLE;
+    ret->memory = VK_NULL_HANDLE;
+    temp.reset();
+    ret.reset();
+}
+
 Texture::Texture(void* data, unsigned int w, unsigned int h) {
-    init(data, w, h);
+    init(data, w, h, 4, vk::Format::eR8G8B8A8Srgb);
 }
 
 Texture::Texture(uint32_t w, uint32_t h, vk::Format format)
@@ -85,13 +126,13 @@ Texture::Texture(uint32_t w, uint32_t h, vk::Format format)
     view = Context::GetInstance().device.createImageView(viewCreateInfo);
 }
 
-void Texture::init(void* data, uint32_t w, uint32_t h) {
-    format = vk::Format::eR8G8B8A8Srgb;
+void Texture::init(void* data, uint32_t w, uint32_t h, uint32_t channel, vk::Format format) {
+    this->format = format;
     flags = vk::SampleCountFlagBits::e1;
     layout = vk::ImageLayout::eShaderReadOnlyOptimal;
     is_depth = false;
     is_stencil = false;
-    const uint32_t size = w * h * 4;
+    const uint32_t size = w * h * channel;
     std::unique_ptr<Buffer> buffer(new Buffer(size,
         vk::BufferUsageFlagBits::eTransferSrc,
         vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible));
@@ -128,7 +169,7 @@ void Texture::createImage(uint32_t w, uint32_t h) {
         .setArrayLayers(1)
         .setMipLevels(1)
         .setExtent({ w, h, 1 })
-        .setFormat(vk::Format::eR8G8B8A8Srgb)
+        .setFormat(format)
         .setTiling(vk::ImageTiling::eOptimal)
         .setInitialLayout(vk::ImageLayout::eUndefined)
         .setUsage(vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled)
@@ -247,7 +288,7 @@ void Texture::createImageView() {
     createInfo.setImage(image)
         .setViewType(vk::ImageViewType::e2D)
         .setComponents(mapping)
-        .setFormat(vk::Format::eR8G8B8A8Srgb)
+        .setFormat(format)
         .setSubresourceRange(range);
     view = Context::GetInstance().device.createImageView(createInfo);
 }
@@ -255,7 +296,13 @@ void Texture::createImageView() {
 std::unique_ptr<TextureManager> TextureManager::instance_ = nullptr;
 
 std::shared_ptr<Texture> TextureManager::Load(const std::string& filename) {
-    datas_.push_back(std::unique_ptr<Texture>(new Texture(filename)));
+    datas_.push_back(std::shared_ptr<Texture>(new Texture(filename)));
+    return datas_.back();
+}
+
+std::shared_ptr<Texture> TextureManager::LoadHDRCubemap(const std::string& filename, vk::Format format)
+{
+    datas_.push_back(std::shared_ptr<Texture>(new Texture(filename, format)));
     return datas_.back();
 }
 

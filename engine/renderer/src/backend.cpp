@@ -10,8 +10,6 @@
 #include "ShaderPool.h"
 #include "program.h"
 #include "render_process.h"
-#include "Render.h"
-#include "UIRenderer.h"
 #include "CommandBuffer.h"
 #include "log.h"
 
@@ -48,10 +46,7 @@ bool VulkanBackend::BeginFrame(double _deltatime, vk::CommandBuffer& buffer, vk:
 	auto result = device.acquireNextImageKHR(swapchain->swapchain, std::numeric_limits<uint64_t>::max(), imageAvaliable);
 	if (result.result != vk::Result::eSuccess)
 		DEMO_LOG(Error, "can't get next image.");
-	//// Start the Dear ImGui frame
-	//ImGui_ImplVulkan_NewFrame();
-	//ImGui_ImplGlfw_NewFrame();
-	//ImGui::NewFrame();
+
 	Context::GetInstance().image_index = result.value;
 	buffer.reset();
 	vk::CommandBufferBeginInfo cmdBI;
@@ -77,21 +72,3 @@ bool VulkanBackend::EndFrame(double _deltatime, vk::CommandBuffer& buffer, vk::F
 	return true;
 }
 
-bool VulkanBackend::BeginRenderpass()
-{
-	return false;
-}
-
-bool VulkanBackend::EndRenderpass()
-{
-	return false;
-}
-
-
-void VulkanBackend::InitImGui(vk::DescriptorPool& descriptorPool, vk::RenderPass& renderPass)
-{
-}
-
-void VulkanBackend::CleanImGui()
-{
-}
