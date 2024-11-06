@@ -14,7 +14,7 @@
 
 namespace
 {
-	vk::DescriptorPool descriptorPool;
+	
 	std::vector<vk::Framebuffer> framebuffers;
 	void check_vk_result(VkResult err)
 	{
@@ -24,6 +24,12 @@ namespace
 		if (err < 0)
 			abort();
 	}
+	ImTextureID id;
+}
+
+void ImGuiLayer::setimageid(void* p)
+{
+	id = p;
 }
 
 ImGuiLayer::ImGuiLayer()
@@ -76,6 +82,7 @@ void ImGuiLayer::OnRender()
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 	imguistate.runUI();
+	ImGui::Image(id, ImVec2(128 * 4, 72 * 4));
 	auto current_frame = Context::GetInstance().current_frame;
 	auto& cmdbufs = Context::GetInstance().cmdbufs;
 	auto [width, height] = GetWindowSize();

@@ -13,6 +13,7 @@ public:
 	static void Quit();
 	static GeometryManager& GetInstance();
 	std::shared_ptr<Mesh> loadobj(std::string name);
+	std::shared_ptr<Mesh> loadgltf(std::string name);
 	std::shared_ptr<Mesh> getMesh(std::string name);
 	
 private:

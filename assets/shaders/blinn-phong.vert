@@ -9,14 +9,14 @@ struct Vertex {
   float normalX;
   float normalY;
   float normalZ;
-  float uvX;
-  float uvY;
   float tangentX;
   float tangentY;
   float tangentZ;
-  float bitangentX;
-  float bitangentY;
-  float bitangentZ;
+  float tangentW;
+  float uvX;
+  float uvY;
+  float uvX2;
+  float uvY2;
   int materialID;
 };
 
@@ -31,10 +31,10 @@ struct Flow
   vec2 texCoord;
   vec3 position;
   vec3 normal;
-  mat3 TBN;
+  vec4 tangent;
 };
 layout (location = 0) out Flow flow;
-layout (location = 6) out flat int omaterialID;
+layout (location = 4) out flat int omaterialID;
 
 layout(set = 2, binding = 0) readonly buffer VertexBuffer {
   Vertex vertices[];
@@ -54,14 +54,7 @@ void main()
     flow.position  = (model * vec4(position, 1.0)).xyz;
     flow.normal = mat3(transpose(inverse(model))) * vec3(vertex.normalX, vertex.normalY, vertex.normalZ);
     omaterialID = vertex.materialID;
-    vec3 normal = vec3(vertex.normalX, vertex.normalY, vertex.normalZ);
-    vec3 tangent = vec3(vertex.tangentX, vertex.tangentY, vertex.tangentZ);
-    vec3 bitangent = vec3(vertex.bitangentX, vertex.bitangentY, vertex.bitangentZ);
-
-    vec3 T = normalize(vec3(model * vec4(tangent,   0.0)));
-    vec3 B = normalize(vec3(model * vec4(bitangent, 0.0)));
-    vec3 N = normalize(vec3(model * vec4(normal,    0.0)));
-    flow.TBN = mat3(T, B, N);
+    flow.tangent = vec4(vertex.tangentX, vertex.tangentY, vertex.tangentZ, vertex.tangentW);
 
     //flow.normal = mat3(transpose(inverse(model))) * vec3(vertex.normalX, vertex.normalY, vertex.normalZ);
     vec4 pos = proj * view * model * vec4(position, 1.0);

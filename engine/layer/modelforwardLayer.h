@@ -26,7 +26,7 @@ private:
 	bool isOpen{ true };
 	std::unique_ptr<GPUProgram> blinn_phong;
 	std::shared_ptr<Sampler> sampler;
-	std::unique_ptr<Mesh> mesh;
+	std::shared_ptr<Mesh> mesh;
 	std::shared_ptr<Buffer> stageBuffer;
 	std::shared_ptr<Buffer> vertexBuffer;
 	std::shared_ptr<Buffer> indiceBuffer;

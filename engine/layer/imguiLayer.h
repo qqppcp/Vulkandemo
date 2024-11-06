@@ -2,6 +2,7 @@
 #include "layer.h"
 #include "ImGuiState.h"
 #include <memory>
+#include <vulkan/vulkan.hpp>
 
 class RenderPass;
 class ImGuiBase;
@@ -9,6 +10,7 @@ class ImGuiBase;
 class ImGuiLayer : public Layer
 {
 public:
+	void setimageid(void* p);
 	ImGuiLayer();
 	~ImGuiLayer();
 	virtual void OnRender() override;
@@ -16,7 +18,7 @@ public:
 	virtual void OnDetach() override;
 
 	void addUI(ImGuiBase* pUI);
-
+	vk::DescriptorPool descriptorPool;
 private:
 	ImGuiState imguistate;
 	std::shared_ptr<RenderPass> renderPass;

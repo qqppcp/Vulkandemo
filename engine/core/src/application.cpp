@@ -18,6 +18,9 @@
 #include "termination.h"
 #include "FrameTimeInfo.h"
 #include "CommandBuffer.h"
+#include "GBufferPass.h"
+#include "FullScreenPass.h"
+#include "CullingPass.h"
 #include "geometry.h"
 #include "camera.h"
 #include "Texture.h"
@@ -26,6 +29,7 @@
 #include "modelforwardLayer.h"
 #include "skyboxLayer.h"
 #include "imguiLayer.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 bool app_on_event(unsigned short code, void* sender, void* listener_inst, EventContext context);
 bool app_on_key(unsigned short code, void* sender, void* listener_inst, EventContext context);
@@ -48,6 +52,19 @@ namespace
 	std::shared_ptr<ModelForwardLayer> layer;
 	std::shared_ptr<SkyboxLayer> skyboxLayer;
 	std::shared_ptr<ImGuiLayer> uiLayer;
+	std::shared_ptr<GBufferPass> gbufferPass;
+	std::shared_ptr<FullScreenPass> fullScreenPass;
+	std::shared_ptr<Buffer> stageBuffer;
+	std::shared_ptr<Buffer> vertexBuffer;
+	std::shared_ptr<Buffer> indiceBuffer;
+	std::shared_ptr<Buffer> materialBuffer;
+	std::shared_ptr<Buffer> indirectBuffer;
+	std::shared_ptr<Buffer> indirectCountBuffer;
+	std::shared_ptr<Buffer> uniformBuffer;
+	std::shared_ptr<CullingPass> cullingPass;
+	std::vector < std::shared_ptr < Sampler >> samplers;
+	void* ptr = nullptr;
+	int count;
 	float rot = 180;
 }
 
@@ -63,36 +80,90 @@ Application::Application(int width, int height, std::string name)
 	}
 	EventManager::Init();
 	InputManager::Init();
-	GeometryManager::Init();
 	EventManager::GetInstance().Register(EVENTCODE::APPLICATION_QUIT, nullptr, app_on_event);
 	EventManager::GetInstance().Register(EVENTCODE::KEY_PRESSED, nullptr, app_on_key);
 	EventManager::GetInstance().Register(EVENTCODE::KEY_RELEASED, nullptr, app_on_key);
 	EventManager::GetInstance().Register(EVENTCODE::RESIZED, nullptr, app_on_resized);
-	CameraManager::init({ 0, 0, 2 });
+	CameraManager::init({ -9.0f, 2.0f, 2.0f });
 	CreateWindow(width, height, name.data());
 	VulkanBackend::Init();
+	GeometryManager::Init();
+	GeometryManager::GetInstance().loadobj(modelPath + "nanosuit_reflect/nanosuit.obj");
+	GeometryManager::GetInstance().loadgltf(modelPath + "Bistro.glb");
 	layer.reset(new ModelForwardLayer(modelPath + "nanosuit_reflect/nanosuit.obj"));
 	skyboxLayer.reset(new SkyboxLayer(texturePath + "skybox.hdr"));
 	uiLayer.reset(new ImGuiLayer());
+	gbufferPass.reset(new GBufferPass());
+	gbufferPass->init(width, height);
+	fullScreenPass.reset(new FullScreenPass(false));
+	fullScreenPass->init({ vk::Format::eR8G8B8A8Unorm });
+	cullingPass.reset(new CullingPass());
 	uiLayer->addUI(GetTermination());
 	uiLayer->addUI(new ImGuiFrameTimeInfo(&state.timer));
 	uiLayer->addUI(layer.get());
+	auto gbufferPipeline = gbufferPass->pipeline();
+	auto glb = GeometryManager::GetInstance().getMesh(modelPath + "Bistro.glb");
+	vertexBuffer.reset(new Buffer(glb->vertices.size() * sizeof(Vertex), vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer,
+		vk::MemoryPropertyFlagBits::eDeviceLocal));
+	indiceBuffer.reset(new Buffer(glb->indices.size() * sizeof(std::uint32_t), vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer,
+		vk::MemoryPropertyFlagBits::eDeviceLocal));
+	materialBuffer.reset(new Buffer(glb->materials.size() * sizeof(Material), vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer,
+		vk::MemoryPropertyFlagBits::eDeviceLocal));
+	uniformBuffer.reset(new Buffer(sizeof(UniformTransforms), vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eUniformBuffer,
+		vk::MemoryPropertyFlagBits::eDeviceLocal));
+	stageBuffer.reset(new Buffer(sizeof(UniformTransforms), vk::BufferUsageFlagBits::eTransferSrc,
+		vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible));
+	ptr = Context::GetInstance().device.mapMemory(stageBuffer->memory, 0, stageBuffer->size);
+	indirectBuffer.reset(new Buffer(glb->indirectDrawData.size() * sizeof(IndirectCommandAndMeshData), vk::BufferUsageFlagBits::eShaderDeviceAddress |
+		vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndirectBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal));
+	indirectCountBuffer.reset(new Buffer(sizeof(int), vk::BufferUsageFlagBits::eShaderDeviceAddress |
+		vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndirectBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal));
+	UploadBufferData({}, vertexBuffer, glb->vertices.size() * sizeof(Vertex), glb->vertices.data());
+	UploadBufferData({}, indiceBuffer, glb->indices.size() * sizeof(std::uint32_t), glb->indices.data());
+	UploadBufferData({}, materialBuffer, glb->materials.size() * sizeof(Material), glb->materials.data());
+	UploadBufferData({}, indirectBuffer, glb->indirectDrawData.size() * sizeof(IndirectCommandAndMeshData), glb->indirectDrawData.data());
+	count = glb->indirectDrawData.size();
+	UploadBufferData({}, indirectCountBuffer, sizeof(int), &count);
 
+	samplers.emplace_back(new Sampler(vk::Filter::eLinear, vk::Filter::eLinear,
+		vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat,
+		vk::SamplerAddressMode::eRepeat, 10.0f));
+	gbufferPipeline->bindResource(0, 0, 0, uniformBuffer, 0, sizeof(UniformTransforms), vk::DescriptorType::eUniformBuffer);
+	gbufferPipeline->bindResource(1, 0, 0, { glb->textures.begin(), glb->textures.end() });
+	gbufferPipeline->bindResource(2, 0, 0, { samplers.begin(), 1 });
+	gbufferPipeline->bindResource(3, 0, 0, { vertexBuffer, indiceBuffer, indirectBuffer, materialBuffer }, vk::DescriptorType::eStorageBuffer);
+	fullScreenPass->pipeline()->bindResource(0, 0, 0, { gbufferPass->specularTexture() }, samplers.back());
+	cullingPass->init(glb, indirectBuffer);
 }
 
 Application::~Application()
 {
+	Context::GetInstance().device.unmapMemory(stageBuffer->memory);
+	for (auto sampler : samplers)
+		sampler.reset();
+	stageBuffer.reset();
+	vertexBuffer.reset();
+	indiceBuffer.reset();
+	materialBuffer.reset();
+	uniformBuffer.reset();
+	indirectBuffer.reset();
+	indirectCountBuffer.reset();
 	auto device = Context::GetInstance().device;
+	indirectBuffer.reset();
+	cullingPass.reset();
+	fullScreenPass.reset();
+	gbufferPass.reset();
 	uiLayer.reset();
 	skyboxLayer.reset();
 	layer.reset();
+	TextureManager::Instance().Clear();
+	GeometryManager::Quit();
 	VulkanBackend::Quit();
 	DestroyWindow();
 	EventManager::GetInstance().Unregister(EVENTCODE::APPLICATION_QUIT, nullptr, app_on_event);
 	EventManager::GetInstance().Unregister(EVENTCODE::KEY_PRESSED, nullptr, app_on_key);
 	EventManager::GetInstance().Unregister(EVENTCODE::KEY_RELEASED, nullptr, app_on_key);
 	EventManager::GetInstance().Unregister(EVENTCODE::RESIZED, nullptr, app_on_resized);
-	GeometryManager::Quit();
 	InputManager::Shutdown();
 	EventManager::Shutdown();
 }
@@ -117,8 +188,40 @@ void Application::run()
 		cmdbufAvaliableFences[i] = device.createFence(fenceCI);
 	}
 
+	vk::DescriptorSetLayoutBinding layoutBinding;
+	layoutBinding.setBinding(0)
+		.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+		.setDescriptorCount(1)
+		.setStageFlags(vk::ShaderStageFlagBits::eFragment);
+	vk::DescriptorSetLayoutCreateInfo layoutInfo;
+	layoutInfo.setBindings(layoutBinding);
+	auto setlayout = device.createDescriptorSetLayout(layoutInfo);
+	vk::DescriptorSetAllocateInfo allocInfo;
+	allocInfo.setDescriptorPool(uiLayer->descriptorPool)
+		.setDescriptorSetCount(1)
+		.setSetLayouts(setlayout);
+	vk::DescriptorSet descriptorSet = device.allocateDescriptorSets(allocInfo)[0];
+	vk::DescriptorImageInfo imageInfo;
+	imageInfo.setImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal)
+		.setImageView(gbufferPass->baseColorTexture()->view)
+		.setSampler(samplers[0]->vkSampler());
+	vk::WriteDescriptorSet descriptorWrite;
+	descriptorWrite.setDstSet(descriptorSet)
+		.setDstBinding(0)
+		.setDstArrayElement(0)
+		.setDescriptorType(vk::DescriptorType::eCombinedImageSampler)
+		.setDescriptorCount(1)
+		.setImageInfo(imageInfo);
+	device.updateDescriptorSets(descriptorWrite, {});
+
 	while (!WindowShouleClose())
 	{
+		UniformTransforms uniform;
+		uniform.model = glm::rotate<float>(glm::mat4(1.0), glm::radians<float>(180.0f), glm::vec3(0, 0, -1));;
+		uniform.view = CameraManager::mainCamera->GetViewMatrix();
+		uniform.projection = glm::perspective(glm::radians(45.0f), (float)1280 / 720, 0.1f, 1000.0f);
+		memcpy(ptr, &uniform, sizeof(UniformTransforms));
+		CopyBuffer(stageBuffer->buffer, uniformBuffer->buffer, sizeof(UniformTransforms), 0, 0);
 		state.timer.newFrame();
 		auto deltatime = state.timer.lastFrameTime<std::chrono::milliseconds>();
 		auto current_frame = Context::GetInstance().current_frame;
@@ -128,8 +231,22 @@ void Application::run()
 			layer->OnUpdate(deltatime.count() / 1000.0);
 		}
 		VulkanBackend::BeginFrame(deltatime.count() / 1000.0, cmdbufs[current_frame], cmdbufAvaliableFences[current_frame], imageAvaliables[current_frame]);
+		cullingPass->cull(cmdbufs[current_frame], Context::GetInstance().image_index);
+		cullingPass->addBarrierForCulledBuffers(cmdbufs[current_frame], vk::PipelineStageFlagBits::eDrawIndirect,
+			Context::GetInstance().queueFamileInfo.computeFamilyIndex.value(), Context::GetInstance().queueFamileInfo.graphicsFamilyIndex.value());
+
+		gbufferPass->render({
+			{.set = 0, .bindIdx = 0},
+			{.set = 1, .bindIdx = 0},
+			{.set = 2, .bindIdx = 0},
+			{.set = 3, .bindIdx = 0}
+			}, indiceBuffer->buffer, cullingPass->culledIndirectDrawBuffer()->buffer, 
+			cullingPass->culledIndirectDrawCountBuffer()->buffer, count, sizeof(IndirectCommandAndMeshData));
 		layer->OnRender();
 		skyboxLayer->OnRender();
+		fullScreenPass->render(Context::GetInstance().image_index);
+		ImTextureID id = (ImTextureID)descriptorSet;
+		uiLayer->setimageid(id);
 		uiLayer->OnRender();
 
 		VulkanBackend::EndFrame(deltatime.count() / 1000.0, cmdbufs[current_frame], cmdbufAvaliableFences[current_frame], imageAvaliables[current_frame], imageDrawFinishs[current_frame]);
@@ -143,6 +260,7 @@ void Application::run()
 		device.destroySemaphore(imageAvaliables[i]);
 		device.destroySemaphore(imageDrawFinishs[i]);
 	}
+	device.destroyDescriptorSetLayout(setlayout);
 }
 
 /*-----------------------------------------------------------------*/

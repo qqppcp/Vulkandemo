@@ -3,18 +3,25 @@
 #include "vulkan/vulkan.hpp"
 #include <array>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_inverse.hpp>
 
 struct Vertex {
 	glm::vec3 Position;
 	glm::vec3 Normal;
+	glm::vec4 Tangent;
 	glm::vec2 TexCoords;
-	glm::vec3 Tangent;
-	glm::vec3 Bitangent;
+	glm::vec2 TexCoords2;
 	int32_t materialId;
-
-	static std::array<vk::VertexInputAttributeDescription, 6> GetAttribute()
+	void applyTransform(const glm::mat4& m) {
+		auto newp = m * glm::vec4(Position, 1.0);
+		Position = glm::vec3(newp.x, newp.y, newp.z);
+		glm::mat3 normalMatrix = glm::inverseTranspose(glm::mat3(m));
+		Normal = normalMatrix * Normal;
+		Tangent = glm::inverseTranspose(m) * Tangent;
+	}
+	static std::array<vk::VertexInputAttributeDescription, 5> GetAttribute()
 	{
-		std::array<vk::VertexInputAttributeDescription, 6> attribs;
+		std::array<vk::VertexInputAttributeDescription, 5> attribs;
 		attribs[0].setBinding(0)
 			.setLocation(0)
 			.setFormat(vk::Format::eR32G32B32Sfloat)
@@ -32,10 +39,6 @@ struct Vertex {
 			.setFormat(vk::Format::eR32G32B32Sfloat)
 			.setOffset(offsetof(Vertex, Tangent.r));
 		attribs[4].setBinding(0)
-			.setLocation(4)
-			.setFormat(vk::Format::eR32G32B32Sfloat)
-			.setOffset(offsetof(Vertex, Bitangent.r));
-		attribs[5].setBinding(0)
 			.setLocation(5)
 			.setFormat(vk::Format::eR32Sint)
 			.setOffset(offsetof(Vertex, materialId));

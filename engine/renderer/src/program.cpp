@@ -1,5 +1,14 @@
 #include "program.h"
 
+GPUProgram::GPUProgram(std::string comp)
+{
+	Compute.reset(new Shader(comp));
+	stages.resize(1);
+	stages[0].setStage(vk::ShaderStageFlagBits::eCompute)
+		.setModule(Compute->module)
+		.setPName("main");
+}
+
 GPUProgram::GPUProgram(std::string vertex, std::string fragment)
 {
 	Vertex.reset(new Shader(vertex));
@@ -51,5 +60,9 @@ GPUProgram::~GPUProgram()
 	if (Fragment.get())
 	{
 		Fragment->destroy();
+	}
+	if (Compute.get())
+	{
+		Compute->destroy();
 	}
 }

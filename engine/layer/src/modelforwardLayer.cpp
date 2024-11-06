@@ -3,6 +3,7 @@
 #include "Sampler.h"
 #include "render_process.h"
 #include "Pipeline.h"
+#include "geometry.h"
 #include "program.h"
 #include "Buffer.h"
 #include "define.h"
@@ -24,8 +25,9 @@ ModelForwardLayer::ModelForwardLayer(std::string_view path)
 {
 	color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	blinn_phong.reset(new GPUProgram(shaderPath + "blinn-phong.vert.spv", shaderPath + "blinn-phong.frag.spv"));
-	mesh.reset(new Mesh);
-	mesh->loadobj(path.data());
+	mesh = GeometryManager::GetInstance().getMesh(path.data());
+	//mesh->loadgltf(modelPath + "Bistro.glb");
+	//mesh->loadobj(path.data());
 	vertexBuffer.reset(new Buffer(mesh->vertices.size() * sizeof(Vertex), vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer,
 		vk::MemoryPropertyFlagBits::eDeviceLocal));
 	indiceBuffer.reset(new Buffer(mesh->indices.size() * sizeof(std::uint32_t), vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer,

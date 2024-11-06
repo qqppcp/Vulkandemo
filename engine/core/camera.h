@@ -3,12 +3,21 @@
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <glm/gtx/type_aligned.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <stdio.h>
 #include <vector>
 
 #include "input.h"
+
+struct UniformTransforms {
+	glm::aligned_mat4 model;
+	glm::aligned_mat4 view;
+	glm::aligned_mat4 projection;
+	glm::aligned_mat4 prevViewMat = glm::mat4(1.0);
+	glm::aligned_mat4 jitter = glm::mat4(1.0);
+};
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum Camera_Movement {

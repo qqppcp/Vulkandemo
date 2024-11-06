@@ -44,7 +44,7 @@ void Context::InitSwapchain()
 {
 	auto [width, height] = GetWindowSize();
 	swapchain.reset(new Swapchain(width, height));
-	depth = TextureManager::Instance().Create(width, height, vk::Format::eD24UnormS8Uint);
+	depth = TextureManager::Instance().Create(width, height, vk::Format::eD24UnormS8Uint, vk::ImageUsageFlagBits::eDepthStencilAttachment | vk::ImageUsageFlagBits::eSampled);
 	uint32_t maxFlight = Context::GetInstance().swapchain->info.imageCount;
 	cmdbufs = CommandManager::Allocate(graphicsCmdPool, maxFlight, true);
 }
@@ -260,23 +260,25 @@ void Context::createDevice() {
 		queueCIs.emplace_back(queueCI);
 	}
 
-	vk::PhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddressFeatures;
-	bufferDeviceAddressFeatures.setBufferDeviceAddress(true)
-		.setBufferDeviceAddressCaptureReplay(true);
+	vk::PhysicalDeviceShaderDrawParametersFeatures shaderDrawParametersFeatures;
+	shaderDrawParametersFeatures.setShaderDrawParameters(VK_TRUE);
 
-	vk::PhysicalDeviceDescriptorIndexingFeatures descriptorIndexingFeatures;
-	descriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
-	descriptorIndexingFeatures.shaderStorageImageArrayNonUniformIndexing = VK_TRUE;
-	descriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
-	descriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind = VK_TRUE;
-	descriptorIndexingFeatures.descriptorBindingUpdateUnusedWhilePending = VK_TRUE;
-	descriptorIndexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
-	descriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = VK_TRUE;
-	descriptorIndexingFeatures.runtimeDescriptorArray = VK_TRUE;
-	descriptorIndexingFeatures.setPNext(&bufferDeviceAddressFeatures);
-
+	vk::PhysicalDeviceVulkan12Features vulkan12Features;
+	vulkan12Features.setDrawIndirectCount(true)
+		.setBufferDeviceAddressCaptureReplay(true)
+		.setShaderSampledImageArrayNonUniformIndexing(true)
+		.setShaderStorageImageArrayNonUniformIndexing(true)
+		.setDescriptorBindingSampledImageUpdateAfterBind(true)
+		.setDescriptorBindingStorageBufferUpdateAfterBind(true)
+		.setDescriptorBindingUpdateUnusedWhilePending(true)
+		.setDescriptorBindingPartiallyBound(true)
+		.setDescriptorBindingVariableDescriptorCount(true)
+		.setRuntimeDescriptorArray(true)
+		.setBufferDeviceAddress(true)
+		.setBufferDeviceAddressCaptureReplay(true)
+		.setPNext(&shaderDrawParametersFeatures);
 	vk::PhysicalDeviceFeatures2 features2;
-	features2.setPNext(&descriptorIndexingFeatures)
+	features2.setPNext(&vulkan12Features)
 		.setFeatures(features);
 	vk::DeviceCreateInfo deviceCI;
 	deviceCI.setQueueCreateInfos(queueCIs)

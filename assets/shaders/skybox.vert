@@ -9,14 +9,14 @@ struct Vertex {
   float normalX;
   float normalY;
   float normalZ;
-  float uvX;
-  float uvY;
   float tangentX;
   float tangentY;
   float tangentZ;
-  float bitangentX;
-  float bitangentY;
-  float bitangentZ;
+  float tangentW;
+  float uvX;
+  float uvY;
+  float uvX2;
+  float uvY2;
   int materialID;
 };
 

@@ -16,17 +16,21 @@ public:
     vk::ImageView view;
 
     vk::Format format;
+    vk::ImageUsageFlags usageFlag;
     vk::SampleCountFlagBits flags;
     vk::ImageLayout layout;
     bool is_depth;
     bool is_stencil;
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
 
 private:
     Texture(std::string_view filename);
     Texture(std::string_view filename, vk::Format format);
 
-    Texture(void* data, uint32_t w, uint32_t h);
-    Texture(uint32_t w, uint32_t h, vk::Format format);
+    Texture(void* data, uint32_t w, uint32_t h, vk::Format format = vk::Format::eR8G8B8A8Srgb);
+    Texture(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled);
 
     void createImage(uint32_t w, uint32_t h);
     void createImageView();
@@ -53,8 +57,8 @@ public:
     std::shared_ptr<Texture> LoadHDRCubemap(const std::string& filename, vk::Format format);
 
     // data must be a RGBA8888 format data
-    std::shared_ptr<Texture> Create(void* data, uint32_t w, uint32_t h);
-    std::shared_ptr<Texture> Create(uint32_t w, uint32_t h, vk::Format format);
+    std::shared_ptr<Texture> Create(void* data, uint32_t w, uint32_t h, vk::Format format = vk::Format::eR8G8B8A8Srgb);
+    std::shared_ptr<Texture> Create(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags usage);
     void Destroy(std::shared_ptr<Texture>);
     void Clear();
 

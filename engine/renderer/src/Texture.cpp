@@ -59,13 +59,16 @@ Texture::Texture(std::string_view filename, vk::Format format)
     ret.reset();
 }
 
-Texture::Texture(void* data, unsigned int w, unsigned int h) {
-    init(data, w, h, 4, vk::Format::eR8G8B8A8Srgb);
+Texture::Texture(void* data, unsigned int w, unsigned int h, vk::Format format) {
+    init(data, w, h, 4, format);
 }
 
-Texture::Texture(uint32_t w, uint32_t h, vk::Format format)
+Texture::Texture(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags usage)
 {
+    width = w;
+    height = h;
     this->format = format;
+    usageFlag = usage;
     flags = vk::SampleCountFlagBits::e1;
     if (format == vk::Format::eD24UnormS8Uint)
     {
@@ -73,16 +76,23 @@ Texture::Texture(uint32_t w, uint32_t h, vk::Format format)
         is_stencil = true;
         layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
     }
+    else
+    {
+        is_depth = false;
+        is_stencil = false;
+        layout = vk::ImageLayout::eColorAttachmentOptimal;
+    }
     auto& device = Context::GetInstance().device;
     vk::ImageCreateInfo createInfo;
     createInfo.setImageType(vk::ImageType::e2D)
+        .setSharingMode(vk::SharingMode::eExclusive)
         .setArrayLayers(1)
         .setMipLevels(1)
         .setExtent({ w, h, 1 })
         .setFormat(format)
         .setTiling(vk::ImageTiling::eOptimal)
         .setInitialLayout(vk::ImageLayout::eUndefined)
-        .setUsage(vk::ImageUsageFlagBits::eDepthStencilAttachment)
+        .setUsage(usageFlag)
         .setSamples(vk::SampleCountFlagBits::e1);
     image = device.createImage(createInfo);
     vk::MemoryAllocateInfo allocInfo;
@@ -104,7 +114,7 @@ Texture::Texture(uint32_t w, uint32_t h, vk::Format format)
     memory = device.allocateMemory(allocInfo);
     device.bindImageMemory(image, memory, 0);
     auto cmdbuf = CommandManager::BeginSingle(Context::GetInstance().graphicsCmdPool);
-    transitionImageLayoutFromUndefine2Opt(cmdbuf);
+    //transitionImageLayoutFromUndefine2Opt(cmdbuf);
     CommandManager::EndSingle(Context::GetInstance().graphicsCmdPool, cmdbuf, Context::GetInstance().graphicsQueue);
     vk::ImageViewCreateInfo viewCreateInfo;
     vk::ComponentMapping mapping;
@@ -113,7 +123,8 @@ Texture::Texture(uint32_t w, uint32_t h, vk::Format format)
         .setG(vk::ComponentSwizzle::eIdentity)
         .setB(vk::ComponentSwizzle::eIdentity)
         .setA(vk::ComponentSwizzle::eIdentity);
-    range.setAspectMask(vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil)
+    range.setAspectMask((is_depth && is_stencil ? vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil : 
+            vk::ImageAspectFlagBits::eColor))
         .setBaseArrayLayer(0)
         .setLayerCount(1)
         .setLevelCount(1)
@@ -127,6 +138,8 @@ Texture::Texture(uint32_t w, uint32_t h, vk::Format format)
 }
 
 void Texture::init(void* data, uint32_t w, uint32_t h, uint32_t channel, vk::Format format) {
+    width = w;
+    height = h;
     this->format = format;
     flags = vk::SampleCountFlagBits::e1;
     layout = vk::ImageLayout::eShaderReadOnlyOptimal;
@@ -306,18 +319,22 @@ std::shared_ptr<Texture> TextureManager::LoadHDRCubemap(const std::string& filen
     return datas_.back();
 }
 
-std::shared_ptr<Texture> TextureManager::Create(void* data, uint32_t w, uint32_t h) {
-    datas_.push_back(std::shared_ptr<Texture>(new Texture(data, w, h)));
+std::shared_ptr<Texture> TextureManager::Create(void* data, uint32_t w, uint32_t h, vk::Format format) {
+    datas_.push_back(std::shared_ptr<Texture>(new Texture(data, w, h, format)));
     return datas_.back();
 }
 
-std::shared_ptr<Texture> TextureManager::Create(uint32_t w, uint32_t h, vk::Format format)
+std::shared_ptr<Texture> TextureManager::Create(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags usage)
 {
-    datas_.push_back(std::shared_ptr<Texture>(new Texture(w, h, format)));
+    datas_.push_back(std::shared_ptr<Texture>(new Texture(w, h, format, usage)));
     return datas_.back();
 }
 
 void TextureManager::Clear() {
+    for (auto t : datas_)
+    {
+        t.reset();
+    }
     datas_.clear();
 }
 

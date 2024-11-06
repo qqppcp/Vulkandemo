@@ -71,10 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)imgui;$(ProjectDir)renderer;$(ProjectDir)layer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)Pass;$(ProjectDir)imgui;$(ProjectDir)renderer;$(ProjectDir)layer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)layer;$(ProjectDir)renderer;$(ProjectDir)imgui;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)Pass;$(ProjectDir)layer;$(ProjectDir)renderer;$(ProjectDir)imgui;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -147,6 +147,9 @@
     <ClCompile Include="layer\src\layerFactory.cpp" />
     <ClCompile Include="layer\src\modelforwardLayer.cpp" />
     <ClCompile Include="layer\src\skyboxLayer.cpp" />
+    <ClCompile Include="Pass\src\CullingPass.cpp" />
+    <ClCompile Include="Pass\src\FullScreenPass.cpp" />
+    <ClCompile Include="Pass\src\GBufferPass.cpp" />
     <ClCompile Include="renderer\src\backend.cpp" />
     <ClCompile Include="bit_array.cpp" />
     <ClCompile Include="bounds.cpp" />
@@ -177,7 +180,6 @@
     <ClCompile Include="renderer\src\Shader.cpp" />
     <ClCompile Include="renderer\src\ShaderPool.cpp" />
     <ClCompile Include="renderer\src\Texture.cpp" />
-    <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="renderer\src\Swapchain.cpp" />
     <ClCompile Include="imgui\src\termination.cpp" />
     <ClCompile Include="core\src\window.cpp" />
@@ -193,6 +195,9 @@
     <ClInclude Include="layer\modelforwardLayer.h" />
     <ClInclude Include="define.h" />
     <ClInclude Include="layer\skyboxLayer.h" />
+    <ClInclude Include="Pass\CullingPass.h" />
+    <ClInclude Include="Pass\FullScreenPass.h" />
+    <ClInclude Include="Pass\GBufferPass.h" />
     <ClInclude Include="renderer\backend.h" />
     <ClInclude Include="bit_array.h" />
     <ClInclude Include="bounds.h" />

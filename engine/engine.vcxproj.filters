@@ -93,9 +93,6 @@
     <ClCompile Include="mesh.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="stb_image.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="core\src\input.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -142,6 +139,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="core\src\geometry.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass\src\GBufferPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass\src\FullScreenPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass\src\CullingPass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -276,6 +282,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="core\geometry.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\GBufferPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\FullScreenPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\CullingPass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

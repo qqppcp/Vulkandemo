@@ -11,10 +11,18 @@ struct MaterialData {
 	vec4 Kd_dissolve;
 	vec4 Ks_shininess;
 	vec4 emission_ior;
+    vec4 baseColorFactor;
     int diffuseTextureId;
 	int normalTextureId;
 	int specularTextureId;
+    int emissiveTextureId;
+    int occlusionTexture;
 	int reflectTextureId;
+    float roughnessFactor;
+	float metallicFactor;
+	int alphaMode;
+	float alphaCutoff;
+    vec2 padding;
 };
 
 struct Flow
@@ -22,11 +30,11 @@ struct Flow
   vec2 texCoord;
   vec3 position;
   vec3 normal;
-  mat3 TBN;
+  vec4 tangent;
 };
 
 layout (location = 0) in Flow flow;
-layout (location = 6) in flat int materialID;
+layout (location = 4) in flat int materialID;
 
 layout(set = 1, binding = 0) uniform sampler2D image[];
 layout(set = 3, binding = 0) readonly buffer MaterialBufferForAllMesh {
@@ -42,13 +50,18 @@ vec3 lightPos = vec3(10, 10, 10);
 void main()
 {
     MaterialData material = materials[materialID];
-    vec3 normal = flow.normal;
+    vec3 normal = normalize(flow.normal);
     if (material.normalTextureId != -1)
     {
         normal = texture(image[material.normalTextureId], flow.texCoord).rgb;
+        normal = normalize(normal * 2.0 - 1.0);
     }
-    normal = normalize(normal * 2.0 - 1.0);
-    normal = normalize(flow.TBN * normal);
+ 
+    const vec3 n = normalize(flow.normal);
+    const vec3 t = normalize(flow.tangent.xyz);
+    const vec3 b = normalize(cross(n, t) * flow.tangent.w);
+    const mat3 TBN = mat3(t, b, n);
+    normal = normalize(TBN * normal);
 
     vec3 lightDir = normalize(lightPos - flow.position);
     vec3 diffuseColor = vec3(0);

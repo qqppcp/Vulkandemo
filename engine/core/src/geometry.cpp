@@ -33,7 +33,20 @@ GeometryManager& GeometryManager::GetInstance()
 
 std::shared_ptr<Mesh> GeometryManager::loadobj(std::string name)
 {
-	return std::shared_ptr<Mesh>();
+	std::shared_ptr<Mesh> mesh;
+	mesh.reset(new Mesh());
+	mesh->loadobj(name);
+	m_Contain[name] = mesh;
+	return mesh;
+}
+
+std::shared_ptr<Mesh> GeometryManager::loadgltf(std::string name)
+{
+	std::shared_ptr<Mesh> mesh;
+	mesh.reset(new Mesh());
+	mesh->loadgltf(name);
+	m_Contain[name] = mesh;
+	return mesh;
 }
 
 std::shared_ptr<Mesh> GeometryManager::getMesh(std::string name)
@@ -108,7 +121,39 @@ GeometryManager::GeometryManager()
 	{
 		for (int y = 0; y <= Y_SEGMENTS; y++)
 		{
-
+			float xSegment = (float)x / (float)X_SEGMENTS;
+			float ySegment = (float)y / (float)Y_SEGMENTS;
+			float xPos = std::cos(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
+			float yPos = std::cos(ySegment * PI);
+			float zPos = std::sin(xSegment * 2.0f * PI) * std::sin(ySegment * PI);
+			Vertex vert;
+			vert.Position = glm::vec3(xPos, yPos, zPos);
+			vert.Normal = glm::vec3(xPos, yPos, zPos);
+			vert.TexCoords = glm::vec2(xSegment, ySegment);
+			sphere->vertices.push_back(vert);
 		}
 	}
+
+	bool oddRow = false;
+	for (unsigned int y = 0; y < Y_SEGMENTS; ++y)
+	{
+		if (!oddRow) // even rows: y == 0, y == 2; and so on
+		{
+			for (unsigned int x = 0; x <= X_SEGMENTS; ++x)
+			{
+				sphere->indices.push_back(y * (X_SEGMENTS + 1) + x);
+				sphere->indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
+			}
+		}
+		else
+		{
+			for (int x = X_SEGMENTS; x >= 0; --x)
+			{
+				sphere->indices.push_back((y + 1) * (X_SEGMENTS + 1) + x);
+				sphere->indices.push_back(y * (X_SEGMENTS + 1) + x);
+			}
+		}
+		oddRow = !oddRow;
+	}
+	// TODO: 画圆需要设置图元为triangle strip
 }
