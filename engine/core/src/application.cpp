@@ -84,7 +84,7 @@ Application::Application(int width, int height, std::string name)
 	EventManager::GetInstance().Register(EVENTCODE::KEY_PRESSED, nullptr, app_on_key);
 	EventManager::GetInstance().Register(EVENTCODE::KEY_RELEASED, nullptr, app_on_key);
 	EventManager::GetInstance().Register(EVENTCODE::RESIZED, nullptr, app_on_resized);
-	CameraManager::init({ -9.0f, 2.0f, 2.0f });
+	CameraManager::init({ 9, -20, 20 });
 	CreateWindow(width, height, name.data());
 	VulkanBackend::Init();
 	GeometryManager::Init();
@@ -217,7 +217,7 @@ void Application::run()
 	while (!WindowShouleClose())
 	{
 		UniformTransforms uniform;
-		uniform.model = glm::rotate<float>(glm::mat4(1.0), glm::radians<float>(180.0f), glm::vec3(0, 0, -1));;
+		uniform.model = glm::rotate<float>(glm::mat4(1.0), glm::radians<float>(0), glm::vec3(0, 0, -1));;
 		uniform.view = CameraManager::mainCamera->GetViewMatrix();
 		uniform.projection = glm::perspective(glm::radians(45.0f), (float)1280 / 720, 0.1f, 1000.0f);
 		memcpy(ptr, &uniform, sizeof(UniformTransforms));
@@ -234,14 +234,35 @@ void Application::run()
 		cullingPass->cull(cmdbufs[current_frame], Context::GetInstance().image_index);
 		cullingPass->addBarrierForCulledBuffers(cmdbufs[current_frame], vk::PipelineStageFlagBits::eDrawIndirect,
 			Context::GetInstance().queueFamileInfo.computeFamilyIndex.value(), Context::GetInstance().queueFamileInfo.graphicsFamilyIndex.value());
-
+		//int cullcount = 0;
+		//{
+		//	std::shared_ptr<Buffer> stage;
+		//	stage.reset(new Buffer(sizeof(int), vk::BufferUsageFlagBits::eTransferDst,
+		//		vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible));
+		//	CopyBuffer(cullingPass->culledIndirectDrawCountBuffer()->buffer, stage->buffer, sizeof(int), 0, 0);
+		//	void* p = device.mapMemory(stage->memory, 0, sizeof(int));
+		//	memcpy(&cullcount, p, sizeof(int));
+		//	device.unmapMemory(stage->memory);
+		//	stage.reset();
+		//}
+		//std::vector<IndirectCommandAndMeshData> ind(cullcount);
+		//if (cullcount)
+		//{
+		//	std::shared_ptr<Buffer> stage;
+		//	stage.reset(new Buffer(sizeof(IndirectCommandAndMeshData) * cullcount, vk::BufferUsageFlagBits::eTransferDst,
+		//		vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible));
+		//	CopyBuffer(cullingPass->culledIndirectDrawBuffer()->buffer, stage->buffer, sizeof(IndirectCommandAndMeshData) * cullcount, 0, 0);
+		//	void* p = device.mapMemory(stage->memory, 0, sizeof(IndirectCommandAndMeshData) * cullcount);
+		//	memcpy(ind.data(), p, sizeof(IndirectCommandAndMeshData) * cullcount);
+		//	device.unmapMemory(stage->memory);
+		//	stage.reset();
+		//}
 		gbufferPass->render({
 			{.set = 0, .bindIdx = 0},
 			{.set = 1, .bindIdx = 0},
 			{.set = 2, .bindIdx = 0},
 			{.set = 3, .bindIdx = 0}
-			}, indiceBuffer->buffer, cullingPass->culledIndirectDrawBuffer()->buffer, 
-			cullingPass->culledIndirectDrawCountBuffer()->buffer, count, sizeof(IndirectCommandAndMeshData));
+			}, indiceBuffer->buffer, cullingPass->culledIndirectDrawBuffer()->buffer, cullingPass->culledIndirectDrawCountBuffer()->buffer, count, sizeof(IndirectCommandAndMeshData));
 		layer->OnRender();
 		skyboxLayer->OnRender();
 		fullScreenPass->render(Context::GetInstance().image_index);

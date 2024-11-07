@@ -167,11 +167,11 @@ inline void ProcessInput(Camera& camera, float _deltatime)
 	}
 	if (InputManager::GetInstance().GetIsKeyDown(KEY::KEY_SPACE))
 	{
-		camera.ProcessKeyboard(Camera_Movement::DOWN, _deltatime);
+		camera.ProcessKeyboard(Camera_Movement::UP, _deltatime);
 	}
 	if (InputManager::GetInstance().GetIsKeyDown(KEY::KEY_LCONTROL))
 	{
-		camera.ProcessKeyboard(Camera_Movement::UP, _deltatime);
+		camera.ProcessKeyboard(Camera_Movement::DOWN, _deltatime);
 	}
 	if (InputManager::GetInstance().GetIsKeyDown(KEY::KEY_Q))
 	{

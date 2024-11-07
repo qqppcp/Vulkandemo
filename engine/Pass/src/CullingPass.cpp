@@ -41,14 +41,14 @@ void CullingPass::init(std::shared_ptr<Mesh> mesh, std::shared_ptr<Buffer> input
 	meshBboxBuffer.reset(new Buffer(totalSize, vk::BufferUsageFlagBits::eStorageBuffer |
 		vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndirectBuffer,
 		vk::MemoryPropertyFlagBits::eDeviceLocal));
-	UploadBufferData({}, meshBboxBuffer, meshBBosData.size() * sizeof(MeshBoundBoxBuffer), meshBBosData.data());
+	UploadBufferData({}, meshBboxBuffer, totalSize, meshBBosData.data());
 
 	outputIndirectDrawBuffer.reset(new Buffer(sizeof(IndirectCommandAndMeshData) * mesh->indirectDrawData.size(),
 		vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eTransferDst |
-		vk::BufferUsageFlagBits::eIndirectBuffer, vk::MemoryPropertyFlagBits::eDeviceLocal));
+		vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eDeviceLocal));
 
 	outputIndirectDrawCountBuffer.reset(new Buffer(sizeof(IndirectDrawCount), vk::BufferUsageFlagBits::eStorageBuffer |
-		vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndirectBuffer,
+		vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eIndirectBuffer | vk::BufferUsageFlagBits::eTransferSrc,
 		vk::MemoryPropertyFlagBits::eDeviceLocal));
 
 	shader.reset(new GPUProgram(shaderPath + "culling.comp.spv"));
@@ -165,11 +165,14 @@ void CullingPass::cull(vk::CommandBuffer cmdbuf, int frameIndex)
 	auto camera = CameraManager::mainCamera;
 	float fov = 45.0f;
 	float nearP = 0.1f;
-	float farP = 1.0f;
+	float farP = 1000.0f;
 	float aspect = 1280.0 / 720;
 	const auto tanFovYHalf = glm::tan(glm::radians(fov) * 0.5);
 	const float nearPlaneHalfHeight = nearP * tanFovYHalf;
 	const float farPlaneHalfHeight = farP * tanFovYHalf;
+	camera->Up = glm::normalize(camera->Up);
+	camera->Right = glm::normalize(camera->Right);
+	camera->Front = glm::normalize(camera->Front);
 	const glm::vec3 nearPlaneHalfHeightVec = nearPlaneHalfHeight * camera->Up;
 	const glm::vec3 nearPlaneHalfWidthVec = nearPlaneHalfHeight * aspect * camera->Right;
 
@@ -206,22 +209,22 @@ void CullingPass::cull(vk::CommandBuffer cmdbuf, int frameIndex)
 		};
 
 	// left
-	const glm::vec3 leftNormal = getNormal(farBottomLeft, nearBottomLeft, farTopLeft);
+	const glm::vec3 leftNormal = -getNormal(farBottomLeft, nearBottomLeft, farTopLeft);
 	frustum.frustumPlanes[0] = glm::vec4(leftNormal, -glm::dot(leftNormal, farBottomLeft));
 	// down
-	const glm::vec3 downNormal = getNormal(farBottomRight, nearBottomRight, farBottomLeft);
+	const glm::vec3 downNormal = -getNormal(farBottomRight, nearBottomRight, farBottomLeft);
 	frustum.frustumPlanes[1] = glm::vec4(downNormal, -glm::dot(downNormal, farBottomRight));
 	// right
-	const glm::vec3 rightNormal = getNormal(farTopRight, nearTopRight, farBottomRight);
+	const glm::vec3 rightNormal = -getNormal(farTopRight, nearTopRight, farBottomRight);
 	frustum.frustumPlanes[2] = glm::vec4(rightNormal, -glm::dot(rightNormal, farTopRight));
 	// top
-	const glm::vec3 topNormal = getNormal(farTopLeft, nearTopLeft, farTopRight);
+	const glm::vec3 topNormal = -getNormal(farTopLeft, nearTopLeft, farTopRight);
 	frustum.frustumPlanes[3] = glm::vec4(topNormal, -glm::dot(topNormal, farTopLeft));
 	// front
-	const glm::vec3 frontNormal = getNormal(nearTopRight, nearTopLeft, nearBottomRight);
+	const glm::vec3 frontNormal = -getNormal(nearTopRight, nearTopLeft, nearBottomRight);
 	frustum.frustumPlanes[4] = glm::vec4(frontNormal, -glm::dot(frontNormal, nearTopRight));
 	// back
-	const glm::vec3 backNormal = getNormal(farTopRight, farBottomRight, farTopLeft);
+	const glm::vec3 backNormal = -getNormal(farTopRight, farBottomRight, farTopLeft);
 	frustum.frustumPlanes[5] = glm::vec4(backNormal, -glm::dot(backNormal, farTopRight));
 
 	memcpy(p, &frustum, sizeof(ViewBuffer));

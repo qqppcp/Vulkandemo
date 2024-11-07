@@ -179,7 +179,7 @@ void GBufferPass::render(const std::vector<Pipeline::SetAndBindingIndex>& sets,
 		.setClearValues(clearValues);
 
 	cmdbufs[current_frame].beginRenderPass(renderPassBI, vk::SubpassContents::eInline);
-	cmdbufs[current_frame].setViewport(0, { vk::Viewport{ 0, (float)0, (float)width, (float)height, 0.0f, 1.0f } });
+	cmdbufs[current_frame].setViewport(0, { vk::Viewport{ 0, (float)height, (float)width, -(float)height, 0.0f, 1.0f } });
 	cmdbufs[current_frame].setScissor(0, { vk::Rect2D{vk::Offset2D{0, 0}, vk::Extent2D{ width, height } } });
 	GBufferPushConstants pushConst{
 		.applyJitter = uint32_t(applyJitter),
