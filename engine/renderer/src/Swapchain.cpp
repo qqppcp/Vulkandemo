@@ -21,7 +21,7 @@ void Swapchain::queryInfo(uint32_t width, uint32_t height)
 	info.surfaceFormat = formats[0];
 	for (auto format : formats)
 	{
-		if (format.format == vk::Format::eR8G8B8A8Srgb &&
+		if (format.format == vk::Format::eB8G8R8A8Unorm &&
 			format.colorSpace == vk::ColorSpaceKHR::eSrgbNonlinear)
 		{
 			info.surfaceFormat = format;

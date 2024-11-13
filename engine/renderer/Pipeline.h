@@ -125,7 +125,7 @@ public:
 	void bindResource(uint32_t set, uint32_t binding, uint32_t index,
 		std::span<std::shared_ptr<Sampler>> samplers);
 	void bindResource(uint32_t set, uint32_t binding, uint32_t index,
-		std::span<std::shared_ptr<vk::ImageView>> imageViews,
+		std::span<vk::ImageView> imageViews,
 		vk::DescriptorType type);
 	void bindResource(uint32_t set, uint32_t binding, uint32_t index,
 		std::vector<std::shared_ptr<Buffer>> buffers, vk::DescriptorType type);

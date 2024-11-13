@@ -240,6 +240,8 @@ void ModelForwardLayer::customUI()
 	if (ImGui::CollapsingHeader("ModelForwardLayer", ImGuiTreeNodeFlags_DefaultOpen))
 	{
 		ImGui::ColorEdit3("Light Color", glm::value_ptr(color));
+		//ImGui::ColorEdit3("Camera Position", glm::value_ptr(CameraManager::mainCamera->Position));
+		ImGui::DragFloat3("Camera Position", glm::value_ptr(CameraManager::mainCamera->Position), -10.0f, 1000.0f);
 	}
 	
 };

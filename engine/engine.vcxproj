@@ -150,6 +150,12 @@
     <ClCompile Include="Pass\src\CullingPass.cpp" />
     <ClCompile Include="Pass\src\FullScreenPass.cpp" />
     <ClCompile Include="Pass\src\GBufferPass.cpp" />
+    <ClCompile Include="Pass\src\HierarchicalDepthBufferPass.cpp" />
+    <ClCompile Include="Pass\src\LightingPass.cpp" />
+    <ClCompile Include="Pass\src\NoisePass.cpp" />
+    <ClCompile Include="Pass\src\ShadowMapPass.cpp" />
+    <ClCompile Include="Pass\src\SSAOPass.cpp" />
+    <ClCompile Include="Pass\src\SSRIntersectPass.cpp" />
     <ClCompile Include="renderer\src\backend.cpp" />
     <ClCompile Include="bit_array.cpp" />
     <ClCompile Include="bounds.cpp" />
@@ -198,6 +204,13 @@
     <ClInclude Include="Pass\CullingPass.h" />
     <ClInclude Include="Pass\FullScreenPass.h" />
     <ClInclude Include="Pass\GBufferPass.h" />
+    <ClInclude Include="Pass\HierarchicalDepthBufferPass.h" />
+    <ClInclude Include="Pass\LightingPass.h" />
+    <ClInclude Include="Pass\NoisePass.h" />
+    <ClInclude Include="Pass\ShadowMapPass.h" />
+    <ClInclude Include="LightData.h" />
+    <ClInclude Include="Pass\SSAOPass.h" />
+    <ClInclude Include="Pass\SSRIntersectPass.h" />
     <ClInclude Include="renderer\backend.h" />
     <ClInclude Include="bit_array.h" />
     <ClInclude Include="bounds.h" />

@@ -150,6 +150,24 @@
     <ClCompile Include="Pass\src\CullingPass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Pass\src\ShadowMapPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass\src\HierarchicalDepthBufferPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass\src\SSAOPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass\src\NoisePass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass\src\LightingPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass\src\SSRIntersectPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\Context.h">
@@ -291,6 +309,27 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Pass\CullingPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\ShadowMapPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\HierarchicalDepthBufferPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\SSAOPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\NoisePass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\LightingPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="LightData.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\SSRIntersectPass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -181,6 +181,14 @@ inline void ProcessInput(Camera& camera, float _deltatime)
 	{
 		camera.ProcessMouseMovement(1, 0);
 	}
+	if (InputManager::GetInstance().GetIsKeyDown(KEY::KEY_T))
+	{
+		camera.ProcessMouseMovement(0, 1);
+	}
+	if (InputManager::GetInstance().GetIsKeyDown(KEY::KEY_R))
+	{
+		camera.ProcessMouseMovement(0, -1);
+	}
 }
 
 class CameraManager

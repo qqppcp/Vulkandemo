@@ -214,7 +214,9 @@ void Context::queryQueueFamily(vk::PhysicalDevice physicalDevice)
 void Context::createDevice() {
 	std::vector<const char*> extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	vk::PhysicalDeviceFeatures features;
-	features.setSamplerAnisotropy(true);
+	features.setSamplerAnisotropy(true)
+		.setDrawIndirectFirstInstance(true)
+		.setMultiDrawIndirect(true);
 	std::unordered_set<uint32_t> uniqueIndex;
 	bool shared[3] = { 0,0,0 };
 	uniqueIndex.insert(queueFamileInfo.graphicsFamilyIndex.value());

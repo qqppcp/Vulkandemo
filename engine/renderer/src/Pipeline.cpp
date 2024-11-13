@@ -298,14 +298,14 @@ void Pipeline::bindResource(uint32_t set, uint32_t binding, uint32_t index, std:
 	m_writeDescSets.emplace_back(std::move(writeDescSet));
 }
 
-void Pipeline::bindResource(uint32_t set, uint32_t binding, uint32_t index, std::span<std::shared_ptr<vk::ImageView>> imageViews, vk::DescriptorType type)
+void Pipeline::bindResource(uint32_t set, uint32_t binding, uint32_t index, std::span<vk::ImageView> imageViews, vk::DescriptorType type)
 {
 	std::vector<vk::DescriptorImageInfo> imageInfos;
 	imageInfos.reserve(imageViews.size());
 	for (const auto& imview : imageViews)
 	{
 		vk::DescriptorImageInfo imageInfo;
-		imageInfo.setImageView(*imview)
+		imageInfo.setImageView(imview)
 			.setImageLayout(vk::ImageLayout::eGeneral);
 		imageInfos.push_back(imageInfo);
 	}
@@ -677,7 +677,7 @@ void Pipeline::createRayTracingPipeline()
 		.setGroups(shaderGroups)
 		.setMaxPipelineRayRecursionDepth(10)
 		.setLayout(m_pipelineLayout);
-	auto vkCreateRayTracingPipelinesKHR = (PFN_vkCreateRayTracingPipelinesKHR)vkGetDeviceProcAddr(Context::GetInstance().device, "vkCreateRayTracingPipelinesKHR");
+	//auto vkCreateRayTracingPipelinesKHR = (PFN_vkCreateRayTracingPipelinesKHR)vkGetDeviceProcAddr(Context::GetInstance().device, "vkCreateRayTracingPipelinesKHR");
 
 	//∂ØÃ¨º”‘ÿ
 	PFN_vkGetInstanceProcAddr instance_proc = reinterpret_cast<PFN_vkGetInstanceProcAddr>(Context::GetInstance().instance.getProcAddr("vkGetInstanceProcAddr"));

@@ -2,6 +2,7 @@
 #include <stb_image.h>
 #include <format>
 
+#include "log.h"
 #include "Context.h"
 #include "CommandBuffer.h"
 #include "convert2Cubemap.h"
@@ -63,18 +64,35 @@ Texture::Texture(void* data, unsigned int w, unsigned int h, vk::Format format) 
     init(data, w, h, 4, format);
 }
 
-Texture::Texture(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags usage)
+Texture::Texture(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags usage, int miplevels)
 {
     width = w;
     height = h;
     this->format = format;
+    this->miplevels = miplevels;
     usageFlag = usage;
     flags = vk::SampleCountFlagBits::e1;
-    if (format == vk::Format::eD24UnormS8Uint)
+    if (format == vk::Format::eD24UnormS8Uint || format == vk::Format::eD16Unorm || format == vk::Format::eD16UnormS8Uint
+        || format == vk::Format::eD32Sfloat || format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eX8D24UnormPack32)
     {
         is_depth = true;
+        if (format == vk::Format::eD16UnormS8Uint || format == vk::Format::eD24UnormS8Uint
+            || format == vk::Format::eD32SfloatS8Uint)
+        {
+            is_stencil = true;
+            layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+        }
+        else
+        {
+            is_stencil = false;
+            layout = vk::ImageLayout::eDepthAttachmentOptimal;
+        }
+    }
+    else if (format == vk::Format::eS8Uint)
+    {
+        is_depth = false;
         is_stencil = true;
-        layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
+        layout = vk::ImageLayout::eStencilAttachmentOptimal;
     }
     else
     {
@@ -82,12 +100,16 @@ Texture::Texture(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags 
         is_stencil = false;
         layout = vk::ImageLayout::eColorAttachmentOptimal;
     }
+    if (format == vk::Format::eR32G32Sfloat)
+    {
+        layout = vk::ImageLayout::eUndefined;
+    }
     auto& device = Context::GetInstance().device;
     vk::ImageCreateInfo createInfo;
     createInfo.setImageType(vk::ImageType::e2D)
         .setSharingMode(vk::SharingMode::eExclusive)
         .setArrayLayers(1)
-        .setMipLevels(1)
+        .setMipLevels(miplevels)
         .setExtent({ w, h, 1 })
         .setFormat(format)
         .setTiling(vk::ImageTiling::eOptimal)
@@ -123,11 +145,11 @@ Texture::Texture(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags 
         .setG(vk::ComponentSwizzle::eIdentity)
         .setB(vk::ComponentSwizzle::eIdentity)
         .setA(vk::ComponentSwizzle::eIdentity);
-    range.setAspectMask((is_depth && is_stencil ? vk::ImageAspectFlagBits::eDepth | vk::ImageAspectFlagBits::eStencil : 
-            vk::ImageAspectFlagBits::eColor))
+    range.setAspectMask((is_depth ? vk::ImageAspectFlagBits::eDepth : (is_stencil ? vk::ImageAspectFlagBits::eStencil :
+            vk::ImageAspectFlagBits::eColor)))
         .setBaseArrayLayer(0)
         .setLayerCount(1)
-        .setLevelCount(1)
+        .setLevelCount(miplevels)
         .setBaseMipLevel(0);
     viewCreateInfo.setImage(image)
         .setViewType(vk::ImageViewType::e2D)
@@ -174,6 +196,121 @@ Texture::~Texture() {
     device.destroyImageView(view);
     device.freeMemory(memory);
     device.destroyImage(image);
+}
+
+void Texture::transitionImageLayout(vk::CommandBuffer cmdbuf, vk::ImageLayout newLayout)
+{
+    vk::AccessFlags srcAccessMask = vk::AccessFlagBits::eNone;
+    vk::AccessFlags dstAccessMask = vk::AccessFlagBits::eNone;
+    vk::PipelineStageFlags sourceStage = vk::PipelineStageFlagBits::eTopOfPipe;
+    vk::PipelineStageFlags destinationStage = vk::PipelineStageFlagBits::eBottomOfPipe;
+
+    vk::PipelineStageFlags depthStageMask = vk::PipelineStageFlagBits::eEarlyFragmentTests |
+        vk::PipelineStageFlagBits::eLateFragmentTests;
+    vk::PipelineStageFlags sampledStageMask = vk::PipelineStageFlagBits::eVertexShader |
+        vk::PipelineStageFlagBits::eFragmentShader | vk::PipelineStageFlagBits::eComputeShader;
+
+    auto oldLayout = layout;
+    if (oldLayout == newLayout)
+    {
+        return;
+    }
+
+    switch (oldLayout)
+    {
+    case vk::ImageLayout::eUndefined:
+        break;
+    case vk::ImageLayout::eGeneral:
+        sourceStage = vk::PipelineStageFlagBits::eAllCommands;
+        srcAccessMask = vk::AccessFlagBits::eMemoryWrite;
+        break;
+    case vk::ImageLayout::eColorAttachmentOptimal:
+        sourceStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        srcAccessMask = vk::AccessFlagBits::eColorAttachmentWrite;
+        break;
+    case vk::ImageLayout::eDepthStencilAttachmentOptimal:
+        sourceStage = depthStageMask;
+        srcAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+        break;
+    case vk::ImageLayout::eDepthStencilReadOnlyOptimal:
+        sourceStage = depthStageMask | sampledStageMask;
+        break;
+    case vk::ImageLayout::eShaderReadOnlyOptimal:
+        sourceStage = sampledStageMask;
+        break;
+    case vk::ImageLayout::eTransferSrcOptimal:
+        sourceStage = vk::PipelineStageFlagBits::eTransfer;
+        break;
+    case vk::ImageLayout::eTransferDstOptimal:
+        sourceStage = vk::PipelineStageFlagBits::eTransfer;
+        srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+        break;
+    case vk::ImageLayout::ePreinitialized:
+        sourceStage = vk::PipelineStageFlagBits::eHost;
+        srcAccessMask = vk::AccessFlagBits::eHostWrite;
+        break;
+    case vk::ImageLayout::ePresentSrcKHR:
+        break;
+    default:
+        DEMO_LOG(Error, "Unknown image layout");
+        break;
+    }
+
+    switch (newLayout)
+    {
+    case vk::ImageLayout::eGeneral:
+    case vk::ImageLayout::eFragmentDensityMapOptimalEXT:
+        destinationStage = vk::PipelineStageFlagBits::eAllCommands;
+        dstAccessMask = vk::AccessFlagBits::eMemoryRead | vk::AccessFlagBits::eMemoryWrite;
+        break;
+    case vk::ImageLayout::eColorAttachmentOptimal:
+        destinationStage = vk::PipelineStageFlagBits::eColorAttachmentOutput;
+        dstAccessMask = vk::AccessFlagBits::eColorAttachmentRead | vk::AccessFlagBits::eColorAttachmentWrite;
+        break;
+    case vk::ImageLayout::eDepthStencilAttachmentOptimal:
+        destinationStage = depthStageMask;
+        dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead | 
+            vk::AccessFlagBits::eDepthStencilAttachmentWrite;
+        break;
+    case vk::ImageLayout::eDepthStencilReadOnlyOptimal:
+        destinationStage = depthStageMask | sampledStageMask;
+        dstAccessMask = vk::AccessFlagBits::eDepthStencilAttachmentRead | 
+            vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead;
+        break;
+    case vk::ImageLayout::eShaderReadOnlyOptimal:
+        destinationStage = sampledStageMask;
+        dstAccessMask = vk::AccessFlagBits::eShaderRead | vk::AccessFlagBits::eInputAttachmentRead;
+        break;
+    case vk::ImageLayout::eTransferSrcOptimal:
+        destinationStage = vk::PipelineStageFlagBits::eTransfer;
+        dstAccessMask = vk::AccessFlagBits::eTransferRead;
+        break;
+    case vk::ImageLayout::eTransferDstOptimal:
+        destinationStage = vk::PipelineStageFlagBits::eTransfer;
+        dstAccessMask = vk::AccessFlagBits::eTransferWrite;
+        break;
+    case vk::ImageLayout::ePresentSrcKHR:
+        break;
+    default:
+        DEMO_LOG(Error, "Unknown image layout");
+        break;
+    }
+    vk::ImageAspectFlags aspectMask = is_depth ? is_stencil ? vk::ImageAspectFlagBits::eStencil | vk::ImageAspectFlagBits::eDepth :
+        vk::ImageAspectFlagBits::eDepth : vk::ImageAspectFlagBits::eColor;
+    vk::ImageSubresourceRange range;
+    range.setAspectMask(aspectMask)
+        .setBaseArrayLayer(0)
+        .setBaseMipLevel(0)
+        .setLayerCount(1)
+        .setLevelCount(miplevels);
+    vk::ImageMemoryBarrier barrier;
+    barrier.setSrcAccessMask(srcAccessMask)
+        .setDstAccessMask(dstAccessMask)
+        .setOldLayout(layout)
+        .setNewLayout(newLayout)
+        .setImage(image)
+        .setSubresourceRange(range);
+    cmdbuf.pipelineBarrier(sourceStage, destinationStage, {}, {}, {}, barrier);
 }
 
 void Texture::createImage(uint32_t w, uint32_t h) {
@@ -245,7 +382,7 @@ void Texture::transitionImageLayoutFromUndefine2Dst(vk::CommandBuffer buffer)
         .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
         .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
         .setSubresourceRange(range)
-        .setDstAccessMask(vk::AccessFlagBits::eNone)
+        .setSrcAccessMask(vk::AccessFlagBits::eNone)
         .setDstAccessMask(vk::AccessFlagBits::eTransferWrite);
     buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eTransfer, {}, {}, {}, barrier);
 }
@@ -264,7 +401,7 @@ void Texture::transitionImageLayoutFromDst2Optimal(vk::CommandBuffer buffer) {
         .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
         .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
         .setSubresourceRange(range)
-        .setDstAccessMask(vk::AccessFlagBits::eTransferWrite)
+        .setSrcAccessMask(vk::AccessFlagBits::eTransferWrite)
         .setDstAccessMask(vk::AccessFlagBits::eShaderRead);
     buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTransfer, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, barrier);
 }
@@ -284,7 +421,7 @@ void Texture::transitionImageLayoutFromUndefine2Opt(vk::CommandBuffer buffer)
         .setDstQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
         .setSrcQueueFamilyIndex(VK_QUEUE_FAMILY_IGNORED)
         .setSubresourceRange(range)
-        .setDstAccessMask(vk::AccessFlagBits::eNone)
+        .setSrcAccessMask(vk::AccessFlagBits::eNone)
         .setDstAccessMask(vk::AccessFlagBits::eShaderWrite);
     buffer.pipelineBarrier(vk::PipelineStageFlagBits::eTopOfPipe, vk::PipelineStageFlagBits::eFragmentShader, {}, {}, {}, barrier);
 }
@@ -324,9 +461,9 @@ std::shared_ptr<Texture> TextureManager::Create(void* data, uint32_t w, uint32_t
     return datas_.back();
 }
 
-std::shared_ptr<Texture> TextureManager::Create(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags usage)
+std::shared_ptr<Texture> TextureManager::Create(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags usage, int miplevels)
 {
-    datas_.push_back(std::shared_ptr<Texture>(new Texture(w, h, format, usage)));
+    datas_.push_back(std::shared_ptr<Texture>(new Texture(w, h, format, usage, miplevels)));
     return datas_.back();
 }
 

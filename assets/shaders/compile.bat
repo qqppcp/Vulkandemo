@@ -9,4 +9,11 @@ D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=frag gbuffer.frag -o gbuffer
 D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=vert fullscreen.vert -o fullscreen.vert.spv
 D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=frag fullscreen.frag -o fullscreen.frag.spv
 D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=comp culling.comp -o culling.comp.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=comp hizgen.comp -o hizgen.comp.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=comp ssao.comp -o ssao.comp.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=comp ssr.comp -o ssr.comp.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=comp noisegen.comp -o noisegen.comp.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=vert shadowmap.vert -o shadowmap.vert.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=frag void.frag -o void.frag.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=frag lighting.frag -o lighting.frag.spv
 pause
