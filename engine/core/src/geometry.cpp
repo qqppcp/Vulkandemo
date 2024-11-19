@@ -65,46 +65,46 @@ GeometryManager::GeometryManager()
 	mesh->vertices.resize(36);
 	{
 		mesh->vertices[0].Position = { -1.0f, -1.0f, -1.0f }; mesh->vertices[0].Normal = { 0.0f,  0.0f, -1.0f }; mesh->vertices[0].TexCoords = { 0.0f, 0.0f };
-		mesh->vertices[1].Position = { 1.0f,  1.0f, -1.0f }; mesh->vertices[0].Normal = { 0.0f,  0.0f, -1.0f }; mesh->vertices[0].TexCoords = { 1.0f, 1.0f };
-		mesh->vertices[2].Position = { 1.0f, -1.0f, -1.0f }; mesh->vertices[0].Normal = { 0.0f,  0.0f, -1.0f }; mesh->vertices[0].TexCoords = { 1.0f, 0.0f };
-		mesh->vertices[3].Position = { 1.0f,  1.0f, -1.0f }; mesh->vertices[0].Normal = { 0.0f,  0.0f, -1.0f }; mesh->vertices[0].TexCoords = { 1.0f, 1.0f };
-		mesh->vertices[4].Position = { -1.0f, -1.0f, -1.0f }; mesh->vertices[0].Normal = { 0.0f,  0.0f, -1.0f }; mesh->vertices[0].TexCoords = { 0.0f, 0.0f };
-		mesh->vertices[5].Position = { -1.0f,  1.0f, -1.0f }; mesh->vertices[0].Normal = { 0.0f,  0.0f, -1.0f }; mesh->vertices[0].TexCoords = { 0.0f, 1.0f };
+		mesh->vertices[1].Position = { 1.0f,  1.0f, -1.0f }; mesh->vertices[1].Normal = { 0.0f,  0.0f, -1.0f }; mesh->vertices[1].TexCoords = { 1.0f, 1.0f };
+		mesh->vertices[2].Position = { 1.0f, -1.0f, -1.0f }; mesh->vertices[2].Normal = { 0.0f,  0.0f, -1.0f }; mesh->vertices[2].TexCoords = { 1.0f, 0.0f };
+		mesh->vertices[3].Position = { 1.0f,  1.0f, -1.0f }; mesh->vertices[3].Normal = { 0.0f,  0.0f, -1.0f }; mesh->vertices[3].TexCoords = { 1.0f, 1.0f };
+		mesh->vertices[4].Position = { -1.0f, -1.0f, -1.0f }; mesh->vertices[4].Normal = { 0.0f,  0.0f, -1.0f }; mesh->vertices[4].TexCoords = { 0.0f, 0.0f };
+		mesh->vertices[5].Position = { -1.0f,  1.0f, -1.0f }; mesh->vertices[5].Normal = { 0.0f,  0.0f, -1.0f }; mesh->vertices[5].TexCoords = { 0.0f, 1.0f };
 
-		mesh->vertices[6].Position = { -1.0f, -1.0f,  1.0f }; mesh->vertices[0].Normal = { 0.0f,  0.0f, 1.0f }; mesh->vertices[0].TexCoords = { 0.0f, 0.0f };
-		mesh->vertices[7].Position = { 1.0f, -1.0f,  1.0f }; mesh->vertices[0].Normal = { 0.0f,  0.0f, 1.0f }; mesh->vertices[0].TexCoords = { 1.0f, 0.0f };
-		mesh->vertices[8].Position = { 1.0f,  1.0f,  1.0f }; mesh->vertices[0].Normal = { 0.0f,  0.0f, 1.0f }; mesh->vertices[0].TexCoords = { 1.0f, 1.0f };
-		mesh->vertices[9].Position = { 1.0f,  1.0f,  1.0f }; mesh->vertices[0].Normal = { 0.0f,  0.0f, 1.0f }; mesh->vertices[0].TexCoords = { 1.0f, 1.0f };
-		mesh->vertices[10].Position = { -1.0f,  1.0f,  1.0f }; mesh->vertices[0].Normal = { 0.0f,  0.0f, 1.0f }; mesh->vertices[0].TexCoords = { 0.0f, 1.0f };
-		mesh->vertices[11].Position = { -1.0f, -1.0f,  1.0f }; mesh->vertices[0].Normal = { 0.0f,  0.0f, 1.0f }; mesh->vertices[0].TexCoords = { 0.0f, 0.0f };
+		mesh->vertices[6].Position = { -1.0f, -1.0f,  1.0f }; mesh->vertices[6].Normal = { 0.0f,  0.0f, 1.0f }; mesh->vertices[6].TexCoords = { 0.0f, 0.0f };
+		mesh->vertices[7].Position = { 1.0f, -1.0f,  1.0f }; mesh->vertices[7].Normal = { 0.0f,  0.0f, 1.0f }; mesh->vertices[7].TexCoords = { 1.0f, 0.0f };
+		mesh->vertices[8].Position = { 1.0f,  1.0f,  1.0f }; mesh->vertices[8].Normal = { 0.0f,  0.0f, 1.0f }; mesh->vertices[8].TexCoords = { 1.0f, 1.0f };
+		mesh->vertices[9].Position = { 1.0f,  1.0f,  1.0f }; mesh->vertices[9].Normal = { 0.0f,  0.0f, 1.0f }; mesh->vertices[9].TexCoords = { 1.0f, 1.0f };
+		mesh->vertices[10].Position = { -1.0f,  1.0f,  1.0f }; mesh->vertices[10].Normal = { 0.0f,  0.0f, 1.0f }; mesh->vertices[10].TexCoords = { 0.0f, 1.0f };
+		mesh->vertices[11].Position = { -1.0f, -1.0f,  1.0f }; mesh->vertices[11].Normal = { 0.0f,  0.0f, 1.0f }; mesh->vertices[11].TexCoords = { 0.0f, 0.0f };
 
-		mesh->vertices[12].Position = { -1.0f,  1.0f,  1.0f }; mesh->vertices[0].Normal = { -1.0f,  0.0f,  0.0f }; mesh->vertices[0].TexCoords = { 1.0f, 0.0f };
-		mesh->vertices[13].Position = { -1.0f,  1.0f, -1.0f }; mesh->vertices[0].Normal = { -1.0f,  0.0f,  0.0f }; mesh->vertices[0].TexCoords = { 1.0f, 1.0f };
-		mesh->vertices[14].Position = { -1.0f, -1.0f, -1.0f }; mesh->vertices[0].Normal = { -1.0f,  0.0f,  0.0f }; mesh->vertices[0].TexCoords = { 0.0f, 1.0f };
-		mesh->vertices[15].Position = { -1.0f, -1.0f, -1.0f }; mesh->vertices[0].Normal = { -1.0f,  0.0f,  0.0f }; mesh->vertices[0].TexCoords = { 0.0f, 1.0f };
-		mesh->vertices[16].Position = { -1.0f, -1.0f,  1.0f }; mesh->vertices[0].Normal = { -1.0f,  0.0f,  0.0f }; mesh->vertices[0].TexCoords = { 0.0f, 0.0f };
-		mesh->vertices[17].Position = { -1.0f,  1.0f,  1.0f }; mesh->vertices[0].Normal = { -1.0f,  0.0f,  0.0f }; mesh->vertices[0].TexCoords = { 1.0f, 0.0f };
+		mesh->vertices[12].Position = { -1.0f,  1.0f,  1.0f }; mesh->vertices[12].Normal = { -1.0f,  0.0f,  0.0f }; mesh->vertices[12].TexCoords = { 1.0f, 0.0f };
+		mesh->vertices[13].Position = { -1.0f,  1.0f, -1.0f }; mesh->vertices[13].Normal = { -1.0f,  0.0f,  0.0f }; mesh->vertices[13].TexCoords = { 1.0f, 1.0f };
+		mesh->vertices[14].Position = { -1.0f, -1.0f, -1.0f }; mesh->vertices[14].Normal = { -1.0f,  0.0f,  0.0f }; mesh->vertices[14].TexCoords = { 0.0f, 1.0f };
+		mesh->vertices[15].Position = { -1.0f, -1.0f, -1.0f }; mesh->vertices[15].Normal = { -1.0f,  0.0f,  0.0f }; mesh->vertices[15].TexCoords = { 0.0f, 1.0f };
+		mesh->vertices[16].Position = { -1.0f, -1.0f,  1.0f }; mesh->vertices[16].Normal = { -1.0f,  0.0f,  0.0f }; mesh->vertices[16].TexCoords = { 0.0f, 0.0f };
+		mesh->vertices[17].Position = { -1.0f,  1.0f,  1.0f }; mesh->vertices[17].Normal = { -1.0f,  0.0f,  0.0f }; mesh->vertices[17].TexCoords = { 1.0f, 0.0f };
 
-		mesh->vertices[18].Position = { 1.0f,  1.0f,  1.0f }; mesh->vertices[0].Normal = { 1.0f,  0.0f,  0.0f }; mesh->vertices[0].TexCoords = { 1.0f, 0.0f };
-		mesh->vertices[19].Position = { 1.0f, -1.0f, -1.0f }; mesh->vertices[0].Normal = { 1.0f,  0.0f,  0.0f }; mesh->vertices[0].TexCoords = { 0.0f, 1.0f };
-		mesh->vertices[20].Position = { 1.0f,  1.0f, -1.0f }; mesh->vertices[0].Normal = { 1.0f,  0.0f,  0.0f }; mesh->vertices[0].TexCoords = { 1.0f, 1.0f };
-		mesh->vertices[21].Position = { 1.0f, -1.0f, -1.0f }; mesh->vertices[0].Normal = { 1.0f,  0.0f,  0.0f }; mesh->vertices[0].TexCoords = { 0.0f, 1.0f };
-		mesh->vertices[22].Position = { 1.0f,  1.0f,  1.0f }; mesh->vertices[0].Normal = { 1.0f,  0.0f,  0.0f }; mesh->vertices[0].TexCoords = { 1.0f, 0.0f };
-		mesh->vertices[23].Position = { 1.0f, -1.0f,  1.0f }; mesh->vertices[0].Normal = { 1.0f,  0.0f,  0.0f }; mesh->vertices[0].TexCoords = { 0.0f, 0.0f };
+		mesh->vertices[18].Position = { 1.0f,  1.0f,  1.0f }; mesh->vertices[18].Normal = { 1.0f,  0.0f,  0.0f }; mesh->vertices[18].TexCoords = { 1.0f, 0.0f };
+		mesh->vertices[19].Position = { 1.0f, -1.0f, -1.0f }; mesh->vertices[19].Normal = { 1.0f,  0.0f,  0.0f }; mesh->vertices[19].TexCoords = { 0.0f, 1.0f };
+		mesh->vertices[20].Position = { 1.0f,  1.0f, -1.0f }; mesh->vertices[20].Normal = { 1.0f,  0.0f,  0.0f }; mesh->vertices[20].TexCoords = { 1.0f, 1.0f };
+		mesh->vertices[21].Position = { 1.0f, -1.0f, -1.0f }; mesh->vertices[21].Normal = { 1.0f,  0.0f,  0.0f }; mesh->vertices[21].TexCoords = { 0.0f, 1.0f };
+		mesh->vertices[22].Position = { 1.0f,  1.0f,  1.0f }; mesh->vertices[22].Normal = { 1.0f,  0.0f,  0.0f }; mesh->vertices[22].TexCoords = { 1.0f, 0.0f };
+		mesh->vertices[23].Position = { 1.0f, -1.0f,  1.0f }; mesh->vertices[23].Normal = { 1.0f,  0.0f,  0.0f }; mesh->vertices[23].TexCoords = { 0.0f, 0.0f };
 
-		mesh->vertices[24].Position = { -1.0f, -1.0f, -1.0f }; mesh->vertices[0].Normal = { 0.0f, -1.0f,  0.0f }; mesh->vertices[0].TexCoords = { 0.0f, 1.0f };
-		mesh->vertices[25].Position = { 1.0f, -1.0f, -1.0f }; mesh->vertices[0].Normal = { 0.0f, -1.0f,  0.0f }; mesh->vertices[0].TexCoords = { 1.0f, 1.0f };
-		mesh->vertices[26].Position = { 1.0f, -1.0f,  1.0f }; mesh->vertices[0].Normal = { 0.0f, -1.0f,  0.0f }; mesh->vertices[0].TexCoords = { 1.0f, 0.0f };
-		mesh->vertices[27].Position = { 1.0f, -1.0f,  1.0f }; mesh->vertices[0].Normal = { 0.0f, -1.0f,  0.0f }; mesh->vertices[0].TexCoords = { 1.0f, 0.0f };
-		mesh->vertices[28].Position = { -1.0f, -1.0f,  1.0f }; mesh->vertices[0].Normal = { 0.0f, -1.0f,  0.0f }; mesh->vertices[0].TexCoords = { 0.0f, 0.0f };
-		mesh->vertices[29].Position = { -1.0f, -1.0f, -1.0f }; mesh->vertices[0].Normal = { 0.0f, -1.0f,  0.0f }; mesh->vertices[0].TexCoords = { 0.0f, 1.0f };
+		mesh->vertices[24].Position = { -1.0f, -1.0f, -1.0f }; mesh->vertices[24].Normal = { 0.0f, -1.0f,  0.0f }; mesh->vertices[24].TexCoords = { 0.0f, 1.0f };
+		mesh->vertices[25].Position = { 1.0f, -1.0f, -1.0f }; mesh->vertices[25].Normal = { 0.0f, -1.0f,  0.0f }; mesh->vertices[25].TexCoords = { 1.0f, 1.0f };
+		mesh->vertices[26].Position = { 1.0f, -1.0f,  1.0f }; mesh->vertices[26].Normal = { 0.0f, -1.0f,  0.0f }; mesh->vertices[26].TexCoords = { 1.0f, 0.0f };
+		mesh->vertices[27].Position = { 1.0f, -1.0f,  1.0f }; mesh->vertices[27].Normal = { 0.0f, -1.0f,  0.0f }; mesh->vertices[27].TexCoords = { 1.0f, 0.0f };
+		mesh->vertices[28].Position = { -1.0f, -1.0f,  1.0f }; mesh->vertices[28].Normal = { 0.0f, -1.0f,  0.0f }; mesh->vertices[28].TexCoords = { 0.0f, 0.0f };
+		mesh->vertices[29].Position = { -1.0f, -1.0f, -1.0f }; mesh->vertices[29].Normal = { 0.0f, -1.0f,  0.0f }; mesh->vertices[29].TexCoords = { 0.0f, 1.0f };
 
-		mesh->vertices[30].Position = { -1.0f,  1.0f, -1.0f }; mesh->vertices[0].Normal = { 0.0f,  1.0f,  0.0f }; mesh->vertices[0].TexCoords = { 0.0f, 1.0f };
-		mesh->vertices[31].Position = { 1.0f,  1.0f , 1.0f }; mesh->vertices[0].Normal = { 0.0f,  1.0f,  0.0f }; mesh->vertices[0].TexCoords = { 1.0f, 0.0f };
-		mesh->vertices[32].Position = { 1.0f,  1.0f, -1.0f }; mesh->vertices[0].Normal = { 0.0f,  1.0f,  0.0f }; mesh->vertices[0].TexCoords = { 1.0f, 1.0f };
-		mesh->vertices[33].Position = { 1.0f,  1.0f,  1.0f }; mesh->vertices[0].Normal = { 0.0f,  1.0f,  0.0f }; mesh->vertices[0].TexCoords = { 1.0f, 0.0f };
-		mesh->vertices[34].Position = { -1.0f,  1.0f, -1.0f }; mesh->vertices[0].Normal = { 0.0f,  1.0f,  0.0f }; mesh->vertices[0].TexCoords = { 0.0f, 1.0f };
-		mesh->vertices[35].Position = { -1.0f,  1.0f,  1.0f }; mesh->vertices[0].Normal = { 0.0f,  1.0f,  0.0f }; mesh->vertices[0].TexCoords = { 0.0f, 0.0f };
+		mesh->vertices[30].Position = { -1.0f,  1.0f, -1.0f }; mesh->vertices[30].Normal = { 0.0f,  1.0f,  0.0f }; mesh->vertices[30].TexCoords = { 0.0f, 1.0f };
+		mesh->vertices[31].Position = { 1.0f,  1.0f , 1.0f }; mesh->vertices[31].Normal = { 0.0f,  1.0f,  0.0f }; mesh->vertices[31].TexCoords = { 1.0f, 0.0f };
+		mesh->vertices[32].Position = { 1.0f,  1.0f, -1.0f }; mesh->vertices[32].Normal = { 0.0f,  1.0f,  0.0f }; mesh->vertices[32].TexCoords = { 1.0f, 1.0f };
+		mesh->vertices[33].Position = { 1.0f,  1.0f,  1.0f }; mesh->vertices[33].Normal = { 0.0f,  1.0f,  0.0f }; mesh->vertices[33].TexCoords = { 1.0f, 0.0f };
+		mesh->vertices[34].Position = { -1.0f,  1.0f, -1.0f }; mesh->vertices[34].Normal = { 0.0f,  1.0f,  0.0f }; mesh->vertices[34].TexCoords = { 0.0f, 1.0f };
+		mesh->vertices[35].Position = { -1.0f,  1.0f,  1.0f }; mesh->vertices[35].Normal = { 0.0f,  1.0f,  0.0f }; mesh->vertices[35].TexCoords = { 0.0f, 0.0f };
 	}
 	for (int i = 0; i < 36; i++)
 	{

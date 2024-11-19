@@ -16,4 +16,6 @@ D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=comp noisegen.comp -o noiseg
 D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=vert shadowmap.vert -o shadowmap.vert.spv
 D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=frag void.frag -o void.frag.spv
 D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=frag lighting.frag -o lighting.frag.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=vert aabb.vert -o aabb.vert.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=frag aabb.frag -o aabb.frag.spv
 pause

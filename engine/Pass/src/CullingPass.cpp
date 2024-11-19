@@ -166,7 +166,7 @@ void CullingPass::cull(vk::CommandBuffer cmdbuf, int frameIndex)
 	float fov = 45.0f;
 	float nearP = 0.1f;
 	float farP = 1000.0f;
-	float aspect = 1280.0 / 720;
+	constexpr float aspect = 1280.0 / 720;
 	const auto tanFovYHalf = glm::tan(glm::radians(fov) * 0.5);
 	const float nearPlaneHalfHeight = nearP * tanFovYHalf;
 	const float farPlaneHalfHeight = farP * tanFovYHalf;

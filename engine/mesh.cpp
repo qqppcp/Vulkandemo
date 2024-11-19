@@ -20,29 +20,49 @@
 using namespace std;
 
 namespace {
-	void loadNode(const tinygltf::Node& node, const tinygltf::Model& model, Mesh* _mesh)
+	std::string getFileExtension(const std::string& filePath) {
+		size_t pos = filePath.find_last_of('.');
+		if (pos != std::string::npos && pos != filePath.length() - 1) {
+			return filePath.substr(pos + 1);
+		}
+		return ""; // 没有后缀时返回空字符串
+	}
+	void loadNode(Node* parent, const tinygltf::Node& node,uint32_t nodeIndex, const tinygltf::Model& model, Mesh* _mesh)
 	{
+		Node* newNode = new Node{};
+		newNode->index = nodeIndex;
+		newNode->parent = parent;
+		newNode->name = node.name;
+		newNode->skinIndex = node.skin;
+		newNode->matrix = glm::mat4(1.0f);
 
 		// Generate local node matrix
 		glm::vec3 translation = glm::vec3(0.0f);
 		if (node.translation.size() == 3) {
 			translation = glm::make_vec3(node.translation.data());
+			newNode->translation = translation;
 		}
 		glm::mat4 rotation = glm::mat4(1.0f);
 		if (node.rotation.size() == 4) {
 			glm::quat q = glm::make_quat(node.rotation.data());
+			rotation = glm::mat4_cast(q);
+			newNode->rotation = glm::mat4(q);
 		}
 		glm::vec3 scale = glm::vec3(1.0f);
 		if (node.scale.size() == 3) {
 			scale = glm::make_vec3(node.scale.data());
+			newNode->scale = scale;
 		}
 		glm::mat4 matrix = glm::mat4(1.0f);
 		if (node.matrix.size() == 16) {
+			newNode->matrix = glm::make_mat4x4(node.matrix.data());
 			matrix = glm::make_mat4x4(node.matrix.data());
 		}
 		else
 		{
-
+			matrix = glm::translate(matrix, translation);
+			matrix *= rotation;
+			matrix = glm::scale(matrix, scale);
 		}
 		_mesh->transforms.push_back(matrix);
 
@@ -51,7 +71,7 @@ namespace {
 		{
 			for (auto i = 0; i < node.children.size(); i++)
 			{
-				loadNode(model.nodes[node.children[i]], model, _mesh);
+				loadNode(newNode, model.nodes[node.children[i]], node.children[i], model, _mesh);
 			}
 		}
 
@@ -59,10 +79,10 @@ namespace {
 		if (node.mesh > -1)
 		{
 			const tinygltf::Mesh mesh = model.meshes[node.mesh];
-			if (mesh.primitives.size() != 1)
+			/*if (mesh.primitives.size() != 1)
 			{
 				std::abort();
-			}
+			}*/
 			for (size_t j = 0; j < mesh.primitives.size(); j++)
 			{
 				const tinygltf::Primitive& primitive = mesh.primitives[j];
@@ -150,7 +170,7 @@ namespace {
 						vert.TexCoords = bufferTexCoords ? glm::make_vec2(&bufferTexCoords[v * 2]) : glm::vec2(0.0f);
 						vert.Tangent = bufferTangents ? glm::vec4(glm::make_vec4(&bufferTangents[v * 4])) : glm::vec4(0.0f);
 						vert.materialId = primitive.material;
-						vert.applyTransform(matrix);
+						//vert.applyTransform(matrix);
 						_mesh->vertices.push_back(vert);
 					}
 				}
@@ -215,8 +235,14 @@ namespace {
 				indirectData.meshId = _mesh->indirectDrawData.size();
 				indirectData.materialIndex = primitive.material;
 				_mesh->indirectDrawData.push_back(indirectData);
+				_mesh->nodes.push_back(newNode);
 			}
 		}
+		if (parent)
+		{
+			parent->children.push_back(newNode);
+		}
+		_mesh->linearNodes.push_back(newNode);
 	}
 }
 
@@ -293,6 +319,12 @@ void Mesh::loadobj(string path)
 	vertices.reserve(total_vtx_num);
 	for (size_t s = 0; s < shapes.size(); s++)
 	{
+		int IndexStart = indices.size();
+		int VertexStart = vertices.size();
+
+		glm::vec3 posMin{10000.0f};
+		glm::vec3 posMax{-10000.0f};
+
 		size_t index_offset = 0;
 		for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++)
 		{
@@ -332,12 +364,28 @@ void Mesh::loadobj(string path)
 					vert.TexCoords = glm::vec2{ 0 };
 					vertices.push_back(vert);
 				}
+				posMin = glm::vec3(std::min(posMin.x, vertices.back().Position.x), std::min(posMin.y, vertices.back().Position.y), std::min(posMin.z, vertices.back().Position.z));
+				posMax = glm::vec3(std::max(posMin.x, vertices.back().Position.x), std::max(posMin.y, vertices.back().Position.y), std::max(posMin.z, vertices.back().Position.z));
 				vertices.back().materialId = shapes[s].mesh.material_ids[f];
 				this->indices.push_back(this->indices.size());
 			}
-
 			index_offset += fv;
 		}
+		AABB aabb;
+		aabb.minPos = posMin;
+		aabb.maxPos = posMax;
+		aabb.extent = (posMax - posMin) * 0.5f;
+		aabb.center = posMin + aabb.extent;
+		aabbs.push_back(aabb);
+		IndirectCommandAndMeshData indirectData;
+		indirectData.command.setFirstIndex(IndexStart)
+			.setFirstInstance(0)
+			.setIndexCount(index_offset)
+			.setInstanceCount(1)
+			.setVertexOffset(VertexStart);
+		indirectData.meshId = indirectDrawData.size();
+		indirectData.materialIndex = vertices.back().materialId;
+		indirectDrawData.push_back(indirectData);
 	}
 	generate_tangents(vertices, indices);
 	for (size_t i = 0; i < materials.size(); i++)
@@ -377,11 +425,21 @@ void Mesh::loadobj(string path)
 
 void Mesh::loadgltf(std::string path)
 {
+	stbi_set_flip_vertically_on_load(false);
 	tinygltf::Model model;
 	tinygltf::TinyGLTF loader;
 	std::string err;
 	std::string warn;
-	bool ret = loader.LoadBinaryFromFile(&model, &err, &warn, path);
+	bool ret = false;
+	auto ext = getFileExtension(path);
+	if (ext == "glb")
+	{
+		ret = loader.LoadBinaryFromFile(&model, &err, &warn, path);
+	}
+	if (ext == "gltf")
+	{
+		ret = loader.LoadASCIIFromFile(&model, &err, &warn, path);
+	} 
 	if (!warn.empty())
 	{
 		DEMO_LOG(Warning, "Warn: " + warn);
@@ -396,26 +454,32 @@ void Mesh::loadgltf(std::string path)
 		return;
 	}
 
-	//for (auto& texture : model.textures)
-	//{
-	//	auto t = TextureManager::Instance().Create(model.images[texture.source].image.data(), 
-	//		model.images[texture.source].width, model.images[texture.source].height);
-	//	textures.push_back(t);
-	//}
-	//使用image中的数据有问题，还是使用index从bufferview中读取图像数据用stbimage读取，设置stbi_set_flip_vertically_on_load(false);
 	for (auto& texture : model.textures)
 	{
-		auto image = model.images[texture.source];
-		auto imageBufferView = image.bufferView;
-		std::vector<uint8_t> imageData(model.bufferViews[imageBufferView].byteLength);
-		memcpy(imageData.data(), model.buffers[0].data.data() + (int)model.bufferViews[imageBufferView].byteOffset, model.bufferViews[imageBufferView].byteLength);
-		int width, height, channles;
-		stbi_set_flip_vertically_on_load(false);
-		auto date = stbi_load_from_memory(imageData.data(), imageData.size(), &width, &height, &channles, STBI_rgb_alpha);
-		auto t = TextureManager::Instance().Create(date, width, height, vk::Format::eR8G8B8A8Unorm);
+		vk::Format format = vk::Format::eR8G8B8A8Unorm;
+		if (model.images[texture.source].bits == 16)
+		{
+			format = vk::Format::eR16G16B16A16Unorm;
+		}
+		auto t = TextureManager::Instance().Create(model.images[texture.source].image.data(), 
+			model.images[texture.source].width, model.images[texture.source].height, 
+			model.images[texture.source].bits / 8 * model.images[texture.source].component, format);
 		textures.push_back(t);
 	}
-	auto s = sizeof(Material);
+	//使用image中的数据有问题，还是使用index从bufferview中读取图像数据用stbimage读取，设置stbi_set_flip_vertically_on_load(false);
+	// 20241114：发现在加载模型前设置非翻转就不用重新加载了
+	//for (auto& texture : model.textures)
+	//{
+	//	auto image = model.images[texture.source];
+	//	auto imageBufferView = image.bufferView;
+	//	std::vector<uint8_t> imageData(model.bufferViews[imageBufferView].byteLength);
+	//	memcpy(imageData.data(), model.buffers[0].data.data() + (int)model.bufferViews[imageBufferView].byteOffset, model.bufferViews[imageBufferView].byteLength);
+	//	int width, height, channles;
+	//	stbi_set_flip_vertically_on_load(false);
+	//	auto date = stbi_load_from_memory(imageData.data(), imageData.size(), &width, &height, &channles, STBI_rgb_alpha);
+	//	auto t = TextureManager::Instance().Create(date, width, height, vk::Format::eR8G8B8A8Unorm);
+	//	textures.push_back(t);
+	//}
 	for (auto& mat : model.materials)
 	{
 		Material currentMat;
@@ -423,6 +487,15 @@ void Mesh::loadgltf(std::string path)
 		currentMat.specularTextureId = mat.pbrMetallicRoughness.metallicRoughnessTexture.index;
 		currentMat.normalTextureId = mat.normalTexture.index;
 		currentMat.emissiveTextureId = mat.emissiveTexture.index;
+
+		if (currentMat.diffuseTextureId == -1 && mat.extensions["KHR_materials_pbrSpecularGlossiness"].Has("diffuseTexture"))
+		{
+			currentMat.diffuseTextureId = mat.extensions["KHR_materials_pbrSpecularGlossiness"].Get("diffuseTexture").Get("index").GetNumberAsInt();
+		}
+		if (currentMat.specularTextureId == -1 && mat.extensions["KHR_materials_pbrSpecularGlossiness"].Has("specularGlossinessTexture"))
+		{
+			currentMat.specularTextureId = mat.extensions["KHR_materials_pbrSpecularGlossiness"].Get("specularGlossinessTexture").Get("index").GetNumberAsInt();
+		}
 
 		currentMat.baseColorFactor = glm::vec4(
 			mat.pbrMetallicRoughness.baseColorFactor[0], mat.pbrMetallicRoughness.baseColorFactor[1],
@@ -449,6 +522,60 @@ void Mesh::loadgltf(std::string path)
 	for (size_t i = 0; i < scene.nodes.size(); i++)
 	{
 		const auto node = model.nodes[scene.nodes[i]];
-		loadNode(node, model, this);
+		loadNode(nullptr,node, scene.nodes[i], model, this);
+	}
+	for (int i = 0; i < nodes.size(); i++)
+	{
+		const glm::mat4 localMatrix = nodes[i]->getMatrix();
+		int start = indirectDrawData[i].command.vertexOffset;
+		int end = vertices.size();
+		glm::vec3 posMin{ 1000 };
+		glm::vec3 posMax{ -1000 };
+		if (i != nodes.size() - 1)
+		{
+			end = indirectDrawData[i + 1].command.vertexOffset;
+		}
+		for (int j = start; j < end; j++)
+		{
+			Vertex& vertex = vertices[j];
+			vertex.Position = glm::vec3(localMatrix * glm::vec4(vertex.Position, 1.0f));
+			vertex.Normal = glm::normalize(glm::mat3(localMatrix) * vertex.Normal);
+			posMin = glm::vec3(std::min(posMin.x, vertex.Position.x), std::min(posMin.y, vertex.Position.y), std::min(posMin.z, vertex.Position.z));
+			posMax = glm::vec3(std::max(posMax.x, vertex.Position.x), std::max(posMax.y, vertex.Position.y), std::max(posMax.z, vertex.Position.z));
+		}
+		AABB& aabb = aabbs[i];
+		aabb.minPos = posMin;
+		aabb.maxPos = posMax;
+		aabb.extent = (posMax - posMin) * 0.5f;
+		aabb.center = posMin + aabb.extent;
+		//AABB& aabb = aabbs[i];
+		//aabb.minPos = glm::vec3(glm::vec4(aabb.minPos, 1.0f) * localMatrix);
+		//aabb.maxPos = glm::vec3(glm::vec4(aabb.maxPos, 1.0f) * localMatrix);
+		//aabb.extent = (aabb.maxPos - aabb.minPos) * 0.5f;
+		//aabb.center = aabb.minPos + aabb.extent;
 	}
 }
+
+glm::mat4 Node::localMatrix()
+{
+	return glm::translate(glm::mat4(1.0f), translation) * glm::mat4(rotation) * glm::scale(glm::mat4(1.0f), scale) * matrix;
+}
+
+glm::mat4 Node::getMatrix()
+{
+	glm::mat4 m = localMatrix();
+	Node* p = parent;
+	while (p) {
+		m = p->localMatrix() * m;
+		p = p->parent;
+	}
+	return m;
+}
+
+Node::~Node()
+{
+	for (auto& child : children) {
+		delete child;
+	}
+}
+

@@ -152,6 +152,7 @@
     <ClCompile Include="Pass\src\GBufferPass.cpp" />
     <ClCompile Include="Pass\src\HierarchicalDepthBufferPass.cpp" />
     <ClCompile Include="Pass\src\LightingPass.cpp" />
+    <ClCompile Include="Pass\src\LineBoxPass.cpp" />
     <ClCompile Include="Pass\src\NoisePass.cpp" />
     <ClCompile Include="Pass\src\ShadowMapPass.cpp" />
     <ClCompile Include="Pass\src\SSAOPass.cpp" />
@@ -206,6 +207,7 @@
     <ClInclude Include="Pass\GBufferPass.h" />
     <ClInclude Include="Pass\HierarchicalDepthBufferPass.h" />
     <ClInclude Include="Pass\LightingPass.h" />
+    <ClInclude Include="Pass\LineBoxPass.h" />
     <ClInclude Include="Pass\NoisePass.h" />
     <ClInclude Include="Pass\ShadowMapPass.h" />
     <ClInclude Include="LightData.h" />

@@ -35,6 +35,7 @@ private:
     Texture(std::string_view filename, vk::Format format);
 
     Texture(void* data, uint32_t w, uint32_t h, vk::Format format = vk::Format::eR8G8B8A8Srgb);
+    Texture(void* data, unsigned int w, unsigned int h, unsigned int channel, vk::Format format);
     Texture(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled,
         int miplevels = 1);
 
@@ -64,6 +65,7 @@ public:
 
     // data must be a RGBA8888 format data
     std::shared_ptr<Texture> Create(void* data, uint32_t w, uint32_t h, vk::Format format = vk::Format::eR8G8B8A8Srgb);
+    std::shared_ptr<Texture> Create(void* data, uint32_t w, uint32_t h, uint32_t channel, vk::Format format);
     std::shared_ptr<Texture> Create(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags usage, int miplevels = 1);
     void Destroy(std::shared_ptr<Texture>);
     void Clear();

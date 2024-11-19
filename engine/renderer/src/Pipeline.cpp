@@ -463,7 +463,7 @@ void Pipeline::createGraphicsPipeline()
 	vk::PipelineRasterizationStateCreateInfo rasterizerSCI;
 	rasterizerSCI.setDepthClampEnable(VK_FALSE)
 		.setRasterizerDiscardEnable(VK_FALSE)
-		.setPolygonMode(vk::PolygonMode::eFill)
+		.setPolygonMode(graphicsPipelineDesc.polygonMode)
 		.setCullMode(graphicsPipelineDesc.cullMode)
 		.setFrontFace(graphicsPipelineDesc.frontFace)
 		.setDepthBiasEnable(VK_FALSE)

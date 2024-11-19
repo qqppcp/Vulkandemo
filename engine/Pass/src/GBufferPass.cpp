@@ -138,7 +138,7 @@ void GBufferPass::init(unsigned int width, unsigned int height)
 			.depthTextureFormat = vk::Format::eD24UnormS8Uint,
 			.sampleCount = vk::SampleCountFlagBits::e1,
 			.cullMode = vk::CullModeFlagBits::eNone,
-			.frontFace = vk::FrontFace::eClockwise,
+			.frontFace = vk::FrontFace::eCounterClockwise,
 			.viewport = vk::Viewport {0, 0, 0, 0},
 			.depthTestEnable = true,
 			.depthWriteEnable = true,

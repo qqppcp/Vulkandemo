@@ -64,6 +64,10 @@ Texture::Texture(void* data, unsigned int w, unsigned int h, vk::Format format) 
     init(data, w, h, 4, format);
 }
 
+Texture::Texture(void* data, unsigned int w, unsigned int h, unsigned int channel, vk::Format format) {
+    init(data, w, h, channel, format);
+}
+
 Texture::Texture(uint32_t w, uint32_t h, vk::Format format, vk::ImageUsageFlags usage, int miplevels)
 {
     width = w;
@@ -458,6 +462,11 @@ std::shared_ptr<Texture> TextureManager::LoadHDRCubemap(const std::string& filen
 
 std::shared_ptr<Texture> TextureManager::Create(void* data, uint32_t w, uint32_t h, vk::Format format) {
     datas_.push_back(std::shared_ptr<Texture>(new Texture(data, w, h, format)));
+    return datas_.back();
+}
+
+std::shared_ptr<Texture> TextureManager::Create(void* data, uint32_t w, uint32_t h, uint32_t channel, vk::Format format) {
+    datas_.push_back(std::shared_ptr<Texture>(new Texture(data, w, h, channel, format)));
     return datas_.back();
 }
 

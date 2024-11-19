@@ -27,6 +27,7 @@
 #include "NoisePass.h"
 #include "LightingPass.h"
 #include "SSRIntersectPass.h"
+#include "LineBoxPass.h"
 #include "geometry.h"
 #include "camera.h"
 #include "Texture.h"
@@ -75,6 +76,7 @@ namespace
 	std::shared_ptr<NoisePass> noisePass;
 	std::shared_ptr<LightingPass> lightPass;
 	std::shared_ptr<SSRIntersectPass> ssrPass;
+	std::shared_ptr<LineBoxPass> lineBoxPass;
 	std::vector < std::shared_ptr < Sampler >> samplers;
 	void* ptr = nullptr;
 	int count;
@@ -91,25 +93,28 @@ Application::Application(int width, int height, std::string name)
 		state.suspended = false;
 		state.timer.newFrame();
 	}
+
 	EventManager::Init();
 	InputManager::Init();
 	EventManager::GetInstance().Register(EVENTCODE::APPLICATION_QUIT, nullptr, app_on_event);
 	EventManager::GetInstance().Register(EVENTCODE::KEY_PRESSED, nullptr, app_on_key);
 	EventManager::GetInstance().Register(EVENTCODE::KEY_RELEASED, nullptr, app_on_key);
 	EventManager::GetInstance().Register(EVENTCODE::RESIZED, nullptr, app_on_resized);
-	CameraManager::init({ -10, 2, 1 });
+	//CameraManager::init({ 0.25f, 1.0f, 3.5f });
+	//CameraManager::init({ -1.0f, 0.2f, -3.0f });
+	CameraManager::init({ 0.0f, 2.0f, 4.0f });
 	CreateWindow(width, height, name.data());
 	VulkanBackend::Init();
 	GeometryManager::Init();
 	GeometryManager::GetInstance().loadobj(modelPath + "nanosuit_reflect/nanosuit.obj");
-	GeometryManager::GetInstance().loadgltf(modelPath + "Bistro.glb");
+	GeometryManager::GetInstance().loadgltf(modelPath + "mirrors_edge_apartment_-_interior_scene.glb");
 	layer.reset(new ModelForwardLayer(modelPath + "nanosuit_reflect/nanosuit.obj"));
 	skyboxLayer.reset(new SkyboxLayer(texturePath + "skybox.hdr"));
 	uiLayer.reset(new ImGuiLayer());
 	gbufferPass.reset(new GBufferPass());
 	gbufferPass->init(width, height);
 	fullScreenPass.reset(new FullScreenPass(false));
-	fullScreenPass->init({ vk::Format::eR8G8B8A8Unorm });
+	fullScreenPass->init({ Context::GetInstance().swapchain->info.surfaceFormat.format});
 	cullingPass.reset(new CullingPass());
 	shadowPass.reset(new ShadowMapPass());
 	hierarchicalDepthBufferPass.reset(new HierarchicalDepthBufferPass());
@@ -117,11 +122,13 @@ Application::Application(int width, int height, std::string name)
 	noisePass.reset(new NoisePass());
 	lightPass.reset(new LightingPass());
 	ssrPass.reset(new SSRIntersectPass());
+	lineBoxPass.reset(new LineBoxPass());
 	uiLayer->addUI(GetTermination());
 	uiLayer->addUI(new ImGuiFrameTimeInfo(&state.timer));
 	uiLayer->addUI(layer.get());
 	auto gbufferPipeline = gbufferPass->pipeline();
-	auto glb = GeometryManager::GetInstance().getMesh(modelPath + "Bistro.glb");
+	auto glb = GeometryManager::GetInstance().getMesh(modelPath + "mirrors_edge_apartment_-_interior_scene.glb");
+	//auto glb = ref->mesh;
 	vertexBuffer.reset(new Buffer(glb->vertices.size() * sizeof(Vertex), vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer,
 		vk::MemoryPropertyFlagBits::eDeviceLocal));
 	indiceBuffer.reset(new Buffer(glb->indices.size() * sizeof(std::uint32_t), vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer,
@@ -146,7 +153,7 @@ Application::Application(int width, int height, std::string name)
 	count = glb->indirectDrawData.size();
 	UploadBufferData({}, indirectCountBuffer, sizeof(int), &count);
 
-	samplers.emplace_back(new Sampler(vk::Filter::eLinear, vk::Filter::eLinear,
+	samplers.emplace_back(new Sampler(vk::Filter::eNearest, vk::Filter::eNearest,
 		vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat,
 		vk::SamplerAddressMode::eRepeat, 10.0f));
 	gbufferPipeline->bindResource(0, 0, 0, uniformBuffer, 0, sizeof(UniformTransforms), vk::DescriptorType::eUniformBuffer);
@@ -169,7 +176,7 @@ Application::Application(int width, int height, std::string name)
 	ssrPass->init(gbufferPass->normalTexture(), gbufferPass->specularTexture(),
 		lightPass->lightTexture(), hierarchicalDepthBufferPass->hierarchicalDepthTexture(),
 		noisePass->noiseTexture());
-
+	lineBoxPass->init(lightPass->lightTexture(), gbufferPass->depthTexture(), glb);
 	fullScreenPass->pipeline()->bindResource(0, 0, 0, { ssrPass->intersectTexture()
 		}, samplers.back());
 }
@@ -192,6 +199,7 @@ Application::~Application()
 	indirectCountBuffer.reset();
 	auto device = Context::GetInstance().device;
 	indirectBuffer.reset();
+	lineBoxPass.reset();
 	ssrPass.reset();
 	lightPass.reset();
 	noisePass.reset();
@@ -214,6 +222,10 @@ Application::~Application()
 	EventManager::GetInstance().Unregister(EVENTCODE::RESIZED, nullptr, app_on_resized);
 	InputManager::Shutdown();
 	EventManager::Shutdown();
+}
+
+void Application::commonInit()
+{
 }
 
 void Application::run()
@@ -263,21 +275,22 @@ void Application::run()
 	device.updateDescriptorSets(descriptorWrite, {});
 	LightData lightData;
 	{
-		Camera lightCamera(glm::vec3(-3.5, 30, 2.0), glm::vec3(0.0f, 1.0f, 0.0f), 90.0f, -90.0f);
+		glm::vec3 lightPos = glm::vec3(0.1, 3.0, 2.0);
+		glm::vec3 target = glm::vec3(0.f);
+		glm::vec3 front = glm::normalize(target - lightPos);
+		glm::vec3 right = glm::normalize(glm::cross(front, glm::vec3(0, 1, 0)));
+		glm::vec3 up = glm::normalize(glm::cross(right, front));
 		UniformTransforms uniform;
 		uniform.model = glm::mat4(1.0f);
-		uniform.view = lightCamera.GetViewMatrix();
-		//uniform.view = CameraManager::mainCamera->GetViewMatrix();
-		//uniform.projection = glm::ortho(-500.0f, 500.0f, -500.0f, 500.0f, -500.0f, 1000.0f);
-		uniform.projection = glm::perspective(glm::radians(60.0f), (float)1280 / 1280, 0.1f, 200.0f);
+		uniform.view = glm::lookAt(lightPos, target, up);
+		uniform.projection = glm::perspective(glm::radians(60.0f), (float)1280 / 1280, 0.1f, 15.0f);
 		memcpy(ptr, &uniform, sizeof(UniformTransforms));
 		CopyBuffer(stageBuffer->buffer, lightBuffer->buffer, sizeof(UniformTransforms), 0, 0);
-		lightData.lightCam = lightCamera;
 		lightData.ambientColor = glm::vec4(1.f, 1.f, 1.f, 1.f);
 		lightData.lightColor = glm::vec4(1.f, 1.f, 1.f, 1.f);
 		lightData.lightVP = uniform.projection * uniform.view;
-		lightData.lightDir = glm::vec4(lightCamera.Front, 1.f);
-		lightData.lightPos = glm::vec4(10, 85, 0, 1);
+		lightData.lightDir = glm::vec4(front, 1.f);
+		lightData.lightPos = glm::vec4(lightPos, 1.0f);
 	}
 	
 
@@ -285,8 +298,15 @@ void Application::run()
 	{
 		UniformTransforms uniform;
 		uniform.model = glm::rotate<float>(glm::mat4(1.0), glm::radians<float>(0), glm::vec3(0, 0, -1));
+		uniform.model = glm::mat4(1.0f);
 		uniform.view = CameraManager::mainCamera->GetViewMatrix();
 		uniform.projection = glm::perspective(glm::radians(45.0f), (float)1280 / 720, 0.1f, 1000.0f);
+		glm::vec4 fs[2] = { glm::vec4{1,0,0,0}, glm::vec4{0,0,1,0} };
+		for (int i = 0; i < 2; i++)
+		{
+			fs[i] = uniform.view * fs[i];
+		}
+		float dd = glm::dot(glm::vec3(fs[0]), glm::vec3(fs[1]));
 		memcpy(ptr, &uniform, sizeof(UniformTransforms));
 		CopyBuffer(stageBuffer->buffer, uniformBuffer->buffer, sizeof(UniformTransforms), 0, 0);
 		state.timer.newFrame();
@@ -321,6 +341,7 @@ void Application::run()
 		ssaoPass->run(cmdbufs[current_frame]);
 		lightPass->render(cmdbufs[current_frame], Context::GetInstance().image_index, lightData,
 			uniform.view, uniform.projection);
+		//lineBoxPass->render(cmdbufs[current_frame], uniform.view, uniform.projection);
 		ssrPass->run(cmdbufs[current_frame]);
 		fullScreenPass->render(Context::GetInstance().image_index, false);
 		ImTextureID id = (ImTextureID)descriptorSet;

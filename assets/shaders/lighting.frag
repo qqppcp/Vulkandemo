@@ -57,7 +57,7 @@ float calculateLinearDepth(float depth) {
          (farDistance + nearDistance - depth * (farDistance - nearDistance));
 }
 
-float computeShadow(vec4 clipSpaceCoordWrtLight) {
+float computeShadow(vec4 clipSpaceCoordWrtLight, float DdotL) {
   vec3 ndcCoordWrtLight = clipSpaceCoordWrtLight.xyz / clipSpaceCoordWrtLight.w;
 
   vec3 zeroToOneCoordWrtLight = ndcCoordWrtLight;
@@ -68,7 +68,8 @@ float computeShadow(vec4 clipSpaceCoordWrtLight) {
   // y needs to be inverted in vulkan
   zeroToOneCoordWrtLight.y = 1.0 - zeroToOneCoordWrtLight.y;
 
-  const float depthBias = 0.00000005;
+  //const float depthBias = 0.00000005;
+  float depthBias = max(0.001 * (1.0 - DdotL), 0.0002);
   zeroToOneCoordWrtLight.z = zeroToOneCoordWrtLight.z - depthBias;
 
 #if defined(USESAMPLERFORSHADOW)
@@ -80,7 +81,7 @@ float computeShadow(vec4 clipSpaceCoordWrtLight) {
 #endif
 }
 
-float PCF(vec4 clipSpaceCoordWrtLight) {
+float PCF(vec4 clipSpaceCoordWrtLight, float DdotL) {
   vec2 texCoord = clipSpaceCoordWrtLight.xy / clipSpaceCoordWrtLight.w;
   texCoord = texCoord * .5 + .5;
   texCoord.y = 1.0 - texCoord.y;
@@ -97,7 +98,7 @@ float PCF(vec4 clipSpaceCoordWrtLight) {
   for (float i = -1.5; i <= 1.5; i += 1.0) {
     for (float j = -1.5; j <= 1.5; j += 1.0) {
       result += computeShadow(clipSpaceCoordWrtLight +
-                              vec4(vec2(i, j) * offset, 0.0, 0.0));
+                              vec4(vec2(i, j) * offset, 0.0, 0.0), DdotL);
     }
   }
   return result / 16.0;
@@ -169,7 +170,8 @@ void main() {
   outColor = vec4(finalColor, 1.0);
 
   vec4 clipSpaceCoordWrtLight = lightData.lightVP * vec4(worldPos.xyz, 1.0f);
-  float vis = PCF(clipSpaceCoordWrtLight);
+  NdotL = max(dot(N, lightDir), 0.0f);
+  float vis = PCF(clipSpaceCoordWrtLight, NdotL);
 
   if (vis <= .001) {
     vis = .3;

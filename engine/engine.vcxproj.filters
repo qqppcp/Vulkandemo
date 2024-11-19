@@ -168,6 +168,9 @@
     <ClCompile Include="Pass\src\SSRIntersectPass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Pass\src\LineBoxPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\Context.h">
@@ -330,6 +333,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Pass\SSRIntersectPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\LineBoxPass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

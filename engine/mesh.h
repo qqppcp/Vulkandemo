@@ -3,6 +3,8 @@
 #include <string>
 #include <vulkan/vulkan.hpp>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "Vertex.h"
 
 class Texture;
@@ -41,6 +43,29 @@ struct AABB
 	glm::vec3 center;
 	glm::vec3 extent;
 };
+struct Node;
+struct Skin {
+	std::string name;
+	Node* skeletonRoot = nullptr;
+	std::vector<glm::mat4> inverseBindMatrices;
+	std::vector<Node*> joints;
+};
+
+struct Node {
+	Node* parent;
+	uint32_t index;
+	std::vector<Node*> children;
+	glm::mat4 matrix;
+	std::string name;
+	Skin* skin;
+	int32_t skinIndex = -1;
+	glm::vec3 translation{};
+	glm::vec3 scale{ 1.0f };
+	glm::quat rotation{};
+	glm::mat4 localMatrix();
+	glm::mat4 getMatrix();
+	~Node();
+};
 
 struct Mesh
 {
@@ -51,6 +76,8 @@ struct Mesh
 	std::vector<Material> materials;
 	std::vector<AABB> aabbs;
 	std::vector<IndirectCommandAndMeshData> indirectDrawData;
+	std::vector<Node*> linearNodes;
+	std::vector<Node*> nodes;
 	std::string directory;
 	~Mesh();
 	void loadobj(std::string path);

@@ -42,6 +42,10 @@ void main() {
     emissiveIndex = mat.emissiveTextureId;
     metallicFactor = mat.metallicFactor;
     roughnessFactor = mat.roughnessFactor;
+    // if (mat.alphaMode != 0)
+    // {
+    //   discard;
+    // }
   }
 
   if (basecolorIndex != -1) {
@@ -51,7 +55,13 @@ void main() {
   } else {
     outgBufferBaseColor = vec4(0.5, .5, 0.5, 1.0);
   }
+// vec3 result;
 
+// result.x = inflatMaterialId % 4; // 示例分配：将 input 的 0-4 映射到 x 分量
+// result.y = (inflatMaterialId / 4) % 4; // 示例分配：将 input 的 4-8 映射到 y 分量
+// result.z = (inflatMaterialId / 16) % 4; // 示例分配：将 input 的 8-16 映射到 z 分量
+
+// outgBufferBaseColor = vec4(0.5f * result.x, 0.5f * result.y, 0.5f * result.z, 1.0f);
   const vec3 n = normalize(inNormal);
   const vec3 t = normalize(inTangent.xyz);
   const vec3 b = normalize(cross(n, t) * inTangent.w);

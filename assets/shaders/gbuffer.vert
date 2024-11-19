@@ -50,7 +50,7 @@ void main() {
   outNormal = normal;
   outTangent =
       vec4(vertex.tangentX, vertex.tangentY, vertex.tangentZ, vertex.tangentW);
-  outModelSpacePos = position;
+  outModelSpacePos = (MVP.model * vec4(position, 1.0)).xyz;
   outClipSpacePos = MVP.projection * MVP.view * MVP.model * vec4(position, 1.0);
   outPrevClipSpacePos =
       MVP.projection * MVP.prevView * MVP.model * vec4(position, 1.0);

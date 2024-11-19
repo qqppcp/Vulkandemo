@@ -29,6 +29,7 @@ public:
 		std::vector<vk::Format> colorTextureFormats;
 		vk::Format depthTextureFormat = vk::Format::eUndefined;
 		vk::Format stencilTextureFormat = vk::Format::eUndefined;
+		vk::PolygonMode polygonMode = vk::PolygonMode::eFill;
 
 		vk::PrimitiveTopology primitiveTopology = vk::PrimitiveTopology::eTriangleList;
 		vk::SampleCountFlagBits sampleCount = vk::SampleCountFlagBits::e1;

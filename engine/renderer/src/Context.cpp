@@ -215,6 +215,7 @@ void Context::createDevice() {
 	std::vector<const char*> extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	vk::PhysicalDeviceFeatures features;
 	features.setSamplerAnisotropy(true)
+		.setFillModeNonSolid(true)
 		.setDrawIndirectFirstInstance(true)
 		.setMultiDrawIndirect(true);
 	std::unordered_set<uint32_t> uniqueIndex;

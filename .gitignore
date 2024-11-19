@@ -6,6 +6,9 @@
 *.lo
 *.o
 *.obj
+*.glb
+*.gltf
+*.fbx
 
 # Precompiled Headers
 *.gch
@@ -52,3 +55,5 @@ build*/
 *.profraw
 *.tlog
 *.spv
+
+buster_drone/

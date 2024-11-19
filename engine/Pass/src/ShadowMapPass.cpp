@@ -12,7 +12,7 @@ constexpr uint32_t SAMPLER_SET = 2;
 constexpr uint32_t STORAGE_BUFFER_SET = 3;
 
 namespace {
-	constexpr int ShadowMapSize = 2048;
+	constexpr int ShadowMapSize = 4096;
 }
 
 ShadowMapPass::ShadowMapPass()
@@ -111,7 +111,7 @@ void ShadowMapPass::init()
 			.colorTextureFormats = {},
 			.depthTextureFormat = depthFormat,
 			.sampleCount = vk::SampleCountFlagBits::e1,
-			.cullMode = vk::CullModeFlagBits::eFront,
+			.cullMode = vk::CullModeFlagBits::eBack,
 			.viewport = {0 ,0 ,0 ,0 },
 			.depthTestEnable = true,
 			.depthWriteEnable = true,
