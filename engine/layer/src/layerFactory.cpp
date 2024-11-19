@@ -1,5 +1,5 @@
 #include "layerFactory.h"
-#include "modelforwardLayer.h"
+#include "layer.h"
 
 LayerFactory::LayerFactory()
 {

@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <vector>
 
+#include "ImGuiBase.h"
 #include "input.h"
 
 struct UniformTransforms {
@@ -196,6 +197,12 @@ class CameraManager
 public:
 	static std::shared_ptr<Camera> mainCamera;
 	static void init(glm::vec3 position);
+};
+
+class CameraUI : public ImGuiBase
+{
+public:
+	virtual void customUI() override;
 };
 
 #endif

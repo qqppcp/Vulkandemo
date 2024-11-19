@@ -1,12 +1,13 @@
 #pragma once
 #include <vector>
 #include "Pipeline.h"
+#include "ImGuiBase.h"
 
 class Texture;
 class RenderPass;
 class GPUProgram;
 
-class GBufferPass
+class GBufferPass : public ImGuiBase
 {
 public:
 	struct GBufferPushConstants 
@@ -51,6 +52,10 @@ public:
 
 	std::shared_ptr<Texture> depthTexture() const { return m_depthTexture; }
 
+	void setImageId(void* id) { this->id = id; }
+
+	virtual void customUI() override;
+
 private:
 	void initTextures(unsigned int width, unsigned int height);
 private:
@@ -66,4 +71,6 @@ private:
 	vk::Framebuffer m_framebuffer;
 	std::shared_ptr<Pipeline> m_pipeline;
 	std::shared_ptr<GPUProgram> gBufferShader;
+
+	void* id;
 };

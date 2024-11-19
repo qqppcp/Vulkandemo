@@ -71,10 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)Pass;$(ProjectDir)imgui;$(ProjectDir)renderer;$(ProjectDir)layer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)APP;$(ProjectDir)Pass;$(ProjectDir)imgui;$(ProjectDir)renderer;$(ProjectDir)layer;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)Pass;$(ProjectDir)layer;$(ProjectDir)renderer;$(ProjectDir)imgui;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)APP;$(ProjectDir)Pass;$(ProjectDir)layer;$(ProjectDir)renderer;$(ProjectDir)imgui;$(ProjectDir)core;$(VULKAN_SDK)\Include;$(SolutionDir)vendor\include;$(SolutionDir)vendor\include\imgui;$(SolutionDir)vendor\include\imgui\backends;$(ProjectDir);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -140,21 +140,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="APP\src\defershade.cpp" />
+    <ClCompile Include="APP\src\forwardshade.cpp" />
     <ClCompile Include="core\src\camera.cpp" />
     <ClCompile Include="core\src\geometry.cpp" />
+    <ClCompile Include="core\src\system.cpp" />
     <ClCompile Include="imgui\src\select.cpp" />
     <ClCompile Include="layer\src\imguiLayer.cpp" />
     <ClCompile Include="layer\src\layerFactory.cpp" />
-    <ClCompile Include="layer\src\modelforwardLayer.cpp" />
-    <ClCompile Include="layer\src\skyboxLayer.cpp" />
     <ClCompile Include="Pass\src\CullingPass.cpp" />
+    <ClCompile Include="Pass\src\ForwardPass.cpp" />
     <ClCompile Include="Pass\src\FullScreenPass.cpp" />
     <ClCompile Include="Pass\src\GBufferPass.cpp" />
     <ClCompile Include="Pass\src\HierarchicalDepthBufferPass.cpp" />
+    <ClCompile Include="Pass\src\LightBoxPass.cpp" />
     <ClCompile Include="Pass\src\LightingPass.cpp" />
     <ClCompile Include="Pass\src\LineBoxPass.cpp" />
     <ClCompile Include="Pass\src\NoisePass.cpp" />
     <ClCompile Include="Pass\src\ShadowMapPass.cpp" />
+    <ClCompile Include="Pass\src\SkyboxPass.cpp" />
     <ClCompile Include="Pass\src\SSAOPass.cpp" />
     <ClCompile Include="Pass\src\SSRIntersectPass.cpp" />
     <ClCompile Include="renderer\src\backend.cpp" />
@@ -162,7 +166,6 @@
     <ClCompile Include="bounds.cpp" />
     <ClCompile Include="renderer\src\Buffer.cpp" />
     <ClCompile Include="cluster.cpp" />
-    <ClCompile Include="core\src\application.cpp" />
     <ClCompile Include="renderer\src\CommandBuffer.cpp" />
     <ClCompile Include="renderer\src\convert2Cubemap.cpp" />
     <ClCompile Include="renderer\src\debugcallback.cpp" />
@@ -194,23 +197,27 @@
     <ClCompile Include="core\src\input.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="APP\defershade.h" />
+    <ClInclude Include="APP\forwardshade.h" />
     <ClInclude Include="core\geometry.h" />
+    <ClInclude Include="core\system.h" />
     <ClInclude Include="imgui\select.h" />
     <ClInclude Include="layer\imguiLayer.h" />
     <ClInclude Include="layer\layer.h" />
     <ClInclude Include="layer\layerFactory.h" />
-    <ClInclude Include="layer\modelforwardLayer.h" />
     <ClInclude Include="define.h" />
-    <ClInclude Include="layer\skyboxLayer.h" />
     <ClInclude Include="Pass\CullingPass.h" />
+    <ClInclude Include="Pass\ForwardPass.h" />
     <ClInclude Include="Pass\FullScreenPass.h" />
     <ClInclude Include="Pass\GBufferPass.h" />
     <ClInclude Include="Pass\HierarchicalDepthBufferPass.h" />
+    <ClInclude Include="Pass\LightBoxPass.h" />
     <ClInclude Include="Pass\LightingPass.h" />
     <ClInclude Include="Pass\LineBoxPass.h" />
     <ClInclude Include="Pass\NoisePass.h" />
     <ClInclude Include="Pass\ShadowMapPass.h" />
     <ClInclude Include="LightData.h" />
+    <ClInclude Include="Pass\SkyboxPass.h" />
     <ClInclude Include="Pass\SSAOPass.h" />
     <ClInclude Include="Pass\SSRIntersectPass.h" />
     <ClInclude Include="renderer\backend.h" />
@@ -237,6 +244,7 @@
     <ClInclude Include="partitioner.h" />
     <ClInclude Include="renderer\Pipeline.h" />
     <ClInclude Include="renderer\program.h" />
+    <ClInclude Include="renderer\RenderTarget.h" />
     <ClInclude Include="renderer\render_process.h" />
     <ClInclude Include="renderer\Sampler.h" />
     <ClInclude Include="renderer\Shader.h" />

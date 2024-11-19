@@ -3,7 +3,10 @@
 #include "Context.h"
 #include "program.h"
 #include "Texture.h"
+#include "camera.h"
 #include "define.h"
+
+#include <imgui.h>
 
 constexpr uint32_t CAMERA_SET = 0;
 constexpr uint32_t TEXTURES_SET = 1;
@@ -199,6 +202,14 @@ void GBufferPass::render(const std::vector<Pipeline::SetAndBindingIndex>& sets,
 	gBufferPositionTexture->layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 	gBufferVelocityTexture->layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 	m_depthTexture->layout = vk::ImageLayout::eShaderReadOnlyOptimal;
+}
+
+void GBufferPass::customUI()
+{
+	if (ImGui::CollapsingHeader("GBuffer Viewer", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Image(id, ImVec2(128 * 4, 72 * 4));
+	}
 }
 
 void GBufferPass::initTextures(unsigned int width, unsigned int height)

@@ -1,23 +1,8 @@
-#include "application.h"
-
+#include "defershade.h"
 #include <format>
-
 #include <imgui_impl_vulkan.h>
 
-#include "window.h"
-#include "backend.h"
-#include "input.h"
-#include "event.h"
-#include "mesh.h"
-#include "log.h"
-#include "Context.h"
-#include "FrameTimer.h"
-#include "program.h"
-#include "render_process.h"
-#include "ImGuiState.h"
-#include "termination.h"
-#include "FrameTimeInfo.h"
-#include "CommandBuffer.h"
+#include "imguiLayer.h"
 #include "GBufferPass.h"
 #include "FullScreenPass.h"
 #include "ShadowMapPass.h"
@@ -28,40 +13,21 @@
 #include "LightingPass.h"
 #include "SSRIntersectPass.h"
 #include "LineBoxPass.h"
-#include "geometry.h"
-#include "camera.h"
-#include "Texture.h"
-#include "Sampler.h"
-#include "Pipeline.h"
-#include "modelforwardLayer.h"
-#include "skyboxLayer.h"
-#include "imguiLayer.h"
-#include <glm/gtc/matrix_transform.hpp>
 
-bool app_on_event(unsigned short code, void* sender, void* listener_inst, EventContext context);
-bool app_on_key(unsigned short code, void* sender, void* listener_inst, EventContext context);
-bool app_on_resized(unsigned short code, void* sender, void* listener_inst, EventContext context);
+#include "FrameTimeInfo.h"
+#include "termination.h"
+#include "geometry.h"
+#include "backend.h"
+#include "Context.h"
+#include "camera.h"
+#include "define.h"
+#include "window.h"
+#include "mesh.h"
 
 namespace
 {
-	struct AppState
-	{
-		bool running;
-		bool suspended;
-		int width;
-		int height;
-		FrameTimer timer;
-	};
-	AppState state;
-	std::string shaderPath = R"(assets\shaders\)";
-	std::string texturePath = R"(assets\textures\)";
-	std::string modelPath = R"(assets\models\)";
-	std::shared_ptr<ModelForwardLayer> layer;
-	std::shared_ptr<SkyboxLayer> skyboxLayer;
 	std::shared_ptr<ImGuiLayer> uiLayer;
-	std::shared_ptr<GBufferPass> gbufferPass;
-	std::shared_ptr<FullScreenPass> fullScreenPass;
-	std::shared_ptr<ShadowMapPass> shadowPass;
+
 	std::shared_ptr<Buffer> stageBuffer;
 	std::shared_ptr<Buffer> vertexBuffer;
 	std::shared_ptr<Buffer> indiceBuffer;
@@ -70,6 +36,10 @@ namespace
 	std::shared_ptr<Buffer> indirectCountBuffer;
 	std::shared_ptr<Buffer> uniformBuffer;
 	std::shared_ptr<Buffer> lightBuffer;
+
+	std::shared_ptr<GBufferPass> gbufferPass;
+	std::shared_ptr<FullScreenPass> fullScreenPass;
+	std::shared_ptr<ShadowMapPass> shadowPass;
 	std::shared_ptr<CullingPass> cullingPass;
 	std::shared_ptr<HierarchicalDepthBufferPass> hierarchicalDepthBufferPass;
 	std::shared_ptr<SSAOPass> ssaoPass;
@@ -80,41 +50,17 @@ namespace
 	std::vector < std::shared_ptr < Sampler >> samplers;
 	void* ptr = nullptr;
 	int count;
-	float rot = 180;
 }
 
-
-Application::Application(int width, int height, std::string name)
+void DeferShade::Init(uint32_t width, uint32_t height)
 {
-	{
-		state.width = width;
-		state.height = height;
-		state.running = true;
-		state.suspended = false;
-		state.timer.newFrame();
-	}
-
-	EventManager::Init();
-	InputManager::Init();
-	EventManager::GetInstance().Register(EVENTCODE::APPLICATION_QUIT, nullptr, app_on_event);
-	EventManager::GetInstance().Register(EVENTCODE::KEY_PRESSED, nullptr, app_on_key);
-	EventManager::GetInstance().Register(EVENTCODE::KEY_RELEASED, nullptr, app_on_key);
-	EventManager::GetInstance().Register(EVENTCODE::RESIZED, nullptr, app_on_resized);
-	//CameraManager::init({ 0.25f, 1.0f, 3.5f });
-	//CameraManager::init({ -1.0f, 0.2f, -3.0f });
 	CameraManager::init({ 0.0f, 2.0f, 4.0f });
-	CreateWindow(width, height, name.data());
-	VulkanBackend::Init();
-	GeometryManager::Init();
-	GeometryManager::GetInstance().loadobj(modelPath + "nanosuit_reflect/nanosuit.obj");
 	GeometryManager::GetInstance().loadgltf(modelPath + "mirrors_edge_apartment_-_interior_scene.glb");
-	layer.reset(new ModelForwardLayer(modelPath + "nanosuit_reflect/nanosuit.obj"));
-	skyboxLayer.reset(new SkyboxLayer(texturePath + "skybox.hdr"));
 	uiLayer.reset(new ImGuiLayer());
 	gbufferPass.reset(new GBufferPass());
 	gbufferPass->init(width, height);
 	fullScreenPass.reset(new FullScreenPass(false));
-	fullScreenPass->init({ Context::GetInstance().swapchain->info.surfaceFormat.format});
+	fullScreenPass->init({ Context::GetInstance().swapchain->info.surfaceFormat.format });
 	cullingPass.reset(new CullingPass());
 	shadowPass.reset(new ShadowMapPass());
 	hierarchicalDepthBufferPass.reset(new HierarchicalDepthBufferPass());
@@ -125,10 +71,10 @@ Application::Application(int width, int height, std::string name)
 	lineBoxPass.reset(new LineBoxPass());
 	uiLayer->addUI(GetTermination());
 	uiLayer->addUI(new ImGuiFrameTimeInfo(&state.timer));
-	uiLayer->addUI(layer.get());
+	uiLayer->addUI(new CameraUI());
+	uiLayer->addUI(gbufferPass.get());
 	auto gbufferPipeline = gbufferPass->pipeline();
 	auto glb = GeometryManager::GetInstance().getMesh(modelPath + "mirrors_edge_apartment_-_interior_scene.glb");
-	//auto glb = ref->mesh;
 	vertexBuffer.reset(new Buffer(glb->vertices.size() * sizeof(Vertex), vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer,
 		vk::MemoryPropertyFlagBits::eDeviceLocal));
 	indiceBuffer.reset(new Buffer(glb->indices.size() * sizeof(std::uint32_t), vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eTransferDst | vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eIndexBuffer,
@@ -164,7 +110,7 @@ Application::Application(int width, int height, std::string name)
 	shadowPass->init();
 	auto shadowPipeline = shadowPass->pipeline();
 	shadowPipeline->bindResource(0, 0, 0, lightBuffer, 0, sizeof(UniformTransforms), vk::DescriptorType::eUniformBuffer);
-	shadowPipeline->bindResource(1, 0, 0, {glb->textures.begin(), glb->textures.begin() + 1});
+	shadowPipeline->bindResource(1, 0, 0, { glb->textures.begin(), glb->textures.begin() + 1 });
 	shadowPipeline->bindResource(2, 0, 0, { samplers.begin(), 1 });
 	shadowPipeline->bindResource(3, 0, 0, { vertexBuffer, indiceBuffer, indirectBuffer, materialBuffer }, vk::DescriptorType::eStorageBuffer);
 	hierarchicalDepthBufferPass->init(gbufferPass->depthTexture());
@@ -181,14 +127,16 @@ Application::Application(int width, int height, std::string name)
 		}, samplers.back());
 }
 
-Application::~Application()
+void DeferShade::Shutdown()
 {
-	Context::GetInstance().device.unmapMemory(stageBuffer->memory);
+	auto device = Context::GetInstance().device;
+	device.unmapMemory(stageBuffer->memory);
 	for (auto sampler : samplers)
 	{
 		sampler.reset();
 	}
 	samplers.clear();
+
 	stageBuffer.reset();
 	vertexBuffer.reset();
 	indiceBuffer.reset();
@@ -197,8 +145,8 @@ Application::~Application()
 	lightBuffer.reset();
 	indirectBuffer.reset();
 	indirectCountBuffer.reset();
-	auto device = Context::GetInstance().device;
 	indirectBuffer.reset();
+
 	lineBoxPass.reset();
 	ssrPass.reset();
 	lightPass.reset();
@@ -210,25 +158,9 @@ Application::~Application()
 	fullScreenPass.reset();
 	gbufferPass.reset();
 	uiLayer.reset();
-	skyboxLayer.reset();
-	layer.reset();
-	TextureManager::Instance().Clear();
-	GeometryManager::Quit();
-	VulkanBackend::Quit();
-	DestroyWindow();
-	EventManager::GetInstance().Unregister(EVENTCODE::APPLICATION_QUIT, nullptr, app_on_event);
-	EventManager::GetInstance().Unregister(EVENTCODE::KEY_PRESSED, nullptr, app_on_key);
-	EventManager::GetInstance().Unregister(EVENTCODE::KEY_RELEASED, nullptr, app_on_key);
-	EventManager::GetInstance().Unregister(EVENTCODE::RESIZED, nullptr, app_on_resized);
-	InputManager::Shutdown();
-	EventManager::Shutdown();
 }
 
-void Application::commonInit()
-{
-}
-
-void Application::run()
+void DeferShade::run()
 {
 	std::vector<vk::Semaphore> imageAvaliables;
 	std::vector<vk::Semaphore> imageDrawFinishs;
@@ -273,6 +205,8 @@ void Application::run()
 		.setDescriptorCount(1)
 		.setImageInfo(imageInfo);
 	device.updateDescriptorSets(descriptorWrite, {});
+	gbufferPass->setImageId(descriptorSet);
+
 	LightData lightData;
 	{
 		glm::vec3 lightPos = glm::vec3(0.1, 3.0, 2.0);
@@ -292,7 +226,7 @@ void Application::run()
 		lightData.lightDir = glm::vec4(front, 1.f);
 		lightData.lightPos = glm::vec4(lightPos, 1.0f);
 	}
-	
+
 
 	while (!WindowShouleClose())
 	{
@@ -301,12 +235,6 @@ void Application::run()
 		uniform.model = glm::mat4(1.0f);
 		uniform.view = CameraManager::mainCamera->GetViewMatrix();
 		uniform.projection = glm::perspective(glm::radians(45.0f), (float)1280 / 720, 0.1f, 1000.0f);
-		glm::vec4 fs[2] = { glm::vec4{1,0,0,0}, glm::vec4{0,0,1,0} };
-		for (int i = 0; i < 2; i++)
-		{
-			fs[i] = uniform.view * fs[i];
-		}
-		float dd = glm::dot(glm::vec3(fs[0]), glm::vec3(fs[1]));
 		memcpy(ptr, &uniform, sizeof(UniformTransforms));
 		CopyBuffer(stageBuffer->buffer, uniformBuffer->buffer, sizeof(UniformTransforms), 0, 0);
 		state.timer.newFrame();
@@ -315,7 +243,6 @@ void Application::run()
 		auto& cmdbufs = Context::GetInstance().cmdbufs;
 		{
 			ProcessInput(*CameraManager::mainCamera, deltatime.count() / 1000.0);
-			layer->OnUpdate(deltatime.count() / 1000.0);
 		}
 		VulkanBackend::BeginFrame(deltatime.count() / 1000.0, cmdbufs[current_frame], cmdbufAvaliableFences[current_frame], imageAvaliables[current_frame]);
 		cullingPass->cull(cmdbufs[current_frame], Context::GetInstance().image_index);
@@ -344,8 +271,8 @@ void Application::run()
 		//lineBoxPass->render(cmdbufs[current_frame], uniform.view, uniform.projection);
 		ssrPass->run(cmdbufs[current_frame]);
 		fullScreenPass->render(Context::GetInstance().image_index, false);
-		ImTextureID id = (ImTextureID)descriptorSet;
-		uiLayer->setimageid(id);
+		//ImTextureID id = (ImTextureID)descriptorSet;
+		//uiLayer->setimageid(id);
 		uiLayer->OnRender();
 
 		VulkanBackend::EndFrame(deltatime.count() / 1000.0, cmdbufs[current_frame], cmdbufAvaliableFences[current_frame], imageAvaliables[current_frame], imageDrawFinishs[current_frame]);
@@ -360,46 +287,4 @@ void Application::run()
 		device.destroySemaphore(imageDrawFinishs[i]);
 	}
 	device.destroyDescriptorSetLayout(setlayout);
-}
-
-/*-----------------------------------------------------------------*/
-bool app_on_event(unsigned short code, void* sender, void* listener_inst, EventContext context)
-{
-	if (code == EVENTCODE::APPLICATION_QUIT)
-	{
-		return true;
-	}
-	return false;
-}
-bool app_on_key(unsigned short code, void* sender, void* listener_inst, EventContext context)
-{
-	if (code == EVENTCODE::KEY_PRESSED)
-	{
-		auto key_code = context.data.u16[0];
-		if (key_code == KEY_ESCAPE)
-		{
-			EventContext data = {};
-			EventManager::GetInstance().Fire(EVENTCODE::APPLICATION_QUIT, 0, data);
-			return true;
-		}
-		else
-		{
-			//DEMO_LOG(Info, std::format("{} key pressed in window.", (char)key_code));
-		}
-	}
-	else if (code == EVENTCODE::KEY_RELEASED)
-	{
-		auto key_code = context.data.u16[0];
-		//DEMO_LOG(Info, std::format("{} key released in window.", (char)key_code));
-	}
-	return false;
-}
-bool app_on_resized(unsigned short code, void* sender, void* listener_inst, EventContext context)
-{
-	if (code == EVENTCODE::RESIZED)
-	{
-		auto width = context.data.u16[0];
-		auto height = context.data.u16[1];
-	}
-	return false;
 }

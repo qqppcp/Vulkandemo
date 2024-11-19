@@ -1,15 +1,11 @@
 #pragma once
-
-#include <string>
+#include <cstdint>
 
 class Application
 {
 public:
-	Application(int width, int height, std::string name = "demo");
-	~Application();
-	void commonInit();
-	void commonShutdown();
-	void run();
-private:
-
+	virtual ~Application() = default;
+	virtual void Init(uint32_t width, uint32_t height) = 0;
+	virtual void Shutdown() = 0;
+	virtual void run() = 0;
 };

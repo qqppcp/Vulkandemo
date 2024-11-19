@@ -496,6 +496,21 @@ void Mesh::loadgltf(std::string path)
 		{
 			currentMat.specularTextureId = mat.extensions["KHR_materials_pbrSpecularGlossiness"].Get("specularGlossinessTexture").Get("index").GetNumberAsInt();
 		}
+		if (mat.extensions["KHR_materials_pbrSpecularGlossiness"].Has("diffuseFactor"))
+		{
+			auto& factor = mat.extensions["KHR_materials_pbrSpecularGlossiness"].Get("diffuseFactor");
+			currentMat.Kd_dissolve.x = factor.Get(0).GetNumberAsDouble();
+			currentMat.Kd_dissolve.y = factor.Get(1).GetNumberAsDouble();
+			currentMat.Kd_dissolve.z = factor.Get(2).GetNumberAsDouble();
+		}
+		if (mat.extensions["KHR_materials_pbrSpecularGlossiness"].Has("specularFactor"))
+		{
+			auto& factor = mat.extensions["KHR_materials_pbrSpecularGlossiness"].Get("specularFactor");
+			currentMat.Ks_shininess.x = factor.Get(0).GetNumberAsDouble();
+			currentMat.Ks_shininess.y = factor.Get(1).GetNumberAsDouble();
+			currentMat.Ks_shininess.z = factor.Get(2).GetNumberAsDouble();
+			currentMat.Ks_shininess.w = 32;
+		}
 
 		currentMat.baseColorFactor = glm::vec4(
 			mat.pbrMetallicRoughness.baseColorFactor[0], mat.pbrMetallicRoughness.baseColorFactor[1],

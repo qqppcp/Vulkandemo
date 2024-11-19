@@ -99,9 +99,6 @@
     <ClCompile Include="core\src\event.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="core\src\application.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="renderer\src\Texture.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -112,9 +109,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="renderer\src\Pipeline.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="layer\src\modelforwardLayer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="core\src\camera.cpp">
@@ -133,9 +127,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="renderer\src\define.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="layer\src\skyboxLayer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="core\src\geometry.cpp">
@@ -169,6 +160,24 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Pass\src\LineBoxPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="core\src\system.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="APP\src\defershade.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass\src\SkyboxPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="APP\src\forwardshade.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass\src\ForwardPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass\src\LightBoxPass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -281,9 +290,6 @@
     <ClInclude Include="layer\layer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="layer\modelforwardLayer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="define.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -297,9 +303,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="renderer\convert2Cubemap.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="layer\skyboxLayer.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="core\geometry.h">
@@ -336,6 +339,27 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Pass\LineBoxPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="core\system.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="APP\defershade.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\SkyboxPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="renderer\RenderTarget.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="APP\forwardshade.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\ForwardPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\LightBoxPass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
