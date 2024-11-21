@@ -18,69 +18,39 @@ constexpr uint32_t BINDING_0 = 0U;
 
 SkyboxPass::~SkyboxPass()
 {
-	for (auto framebuffer : framebuffers)
-	{
-		Context::GetInstance().device.destroyFramebuffer(framebuffer);
-	}
+	Context::GetInstance().device.destroyFramebuffer(framebuffer);
 	TextureManager::Instance().Destroy(hdrCubeTexture);
 }
 
-void SkyboxPass::init(std::vector<RenderTarget>& rts)
+void SkyboxPass::init(std::shared_ptr<Texture> colorTexture, std::shared_ptr<Texture> depthTexture)
 {
+	colorTexture_ = colorTexture;
+	depthTexture_ = depthTexture;
 	hdrCubeTexture = TextureManager::Instance().LoadHDRCubemap(texturePath + "skybox.hdr", vk::Format::eB10G11R11UfloatPack32);
-	width = rts[0].width;
-	height = rts[0].height;
+	width = colorTexture->width;
+	height = colorTexture->height;
 	{
 		sampler.reset(new Sampler(vk::Filter::eLinear, vk::Filter::eLinear,
 			vk::SamplerAddressMode::eRepeat, vk::SamplerAddressMode::eRepeat,
 			vk::SamplerAddressMode::eRepeat, 10.0f));
 	}
 	{
-		std::vector<vk::Format> formats = rts[0].formats;
-		formats.push_back(rts[0].depthFormat);
-		std::vector<vk::AttachmentLoadOp> loads;
-		std::vector<vk::AttachmentStoreOp> stores;
-		for (int i = 0; i < rts[0].clears.size(); i++)
-		{
-			switch (rts[0].clears[i])
-			{
-			case LoadOp::Clear:
-				loads.push_back(vk::AttachmentLoadOp::eClear); break;
-			case LoadOp::Load:
-				loads.push_back(vk::AttachmentLoadOp::eLoad); break;
-			default:
-				loads.push_back(vk::AttachmentLoadOp::eDontCare);
-				break;
-			}
-			stores.push_back(vk::AttachmentStoreOp::eStore);
-		}
-		m_renderPass.reset(new RenderPass(formats,
+		m_renderPass.reset(new RenderPass(std::vector<vk::Format>{colorTexture->format, depthTexture->format},
 			std::vector<vk::ImageLayout>{vk::ImageLayout::eUndefined, vk::ImageLayout::eUndefined},
-			std::vector<vk::ImageLayout>{vk::ImageLayout::ePresentSrcKHR, vk::ImageLayout::eDepthStencilAttachmentOptimal },
-			loads,
-			stores,
+			std::vector<vk::ImageLayout>{vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eDepthStencilAttachmentOptimal },
+			std::vector<vk::AttachmentLoadOp>{vk::AttachmentLoadOp::eDontCare, vk::AttachmentLoadOp::eDontCare},
+			std::vector<vk::AttachmentStoreOp>{vk::AttachmentStoreOp::eStore, vk::AttachmentStoreOp::eStore},
 			vk::PipelineBindPoint::eGraphics, {}, 1));
 	}
 	{
-		for (int i = 0; i < rts.size(); i++)
-		{
-			std::vector<vk::ImageView> attachments;
-			for (int j = 0; j < rts[i].views.size(); j++)
-			{
-				attachments.push_back(rts[i].views[j]);
-			}
-			if (rts[i].depth != -1)
-			{
-				attachments.push_back(rts[i].depthView);
-			}
-			vk::FramebufferCreateInfo framebufferCI;
-			framebufferCI.setAttachments(attachments)
-				.setLayers(1)
-				.setRenderPass(m_renderPass->vkRenderPass())
-				.setWidth(width)
-				.setHeight(height);
-			framebuffers.emplace_back(Context::GetInstance().device.createFramebuffer(framebufferCI));
-		}
+		std::vector<vk::ImageView> attachments{ colorTexture->view, depthTexture->view };
+		vk::FramebufferCreateInfo framebufferCI;
+		framebufferCI.setAttachments(attachments)
+			.setLayers(1)
+			.setRenderPass(m_renderPass->vkRenderPass())
+			.setWidth(width)
+			.setHeight(height);
+		framebuffer = Context::GetInstance().device.createFramebuffer(framebufferCI);
 	}
 	{
 		skyboxShader.reset(new GPUProgram(shaderPath + "skybox.vert.spv", shaderPath + "skybox.frag.spv"));
@@ -121,8 +91,8 @@ void SkyboxPass::init(std::vector<RenderTarget>& rts)
 			.fragmentShader = skyboxShader->Fragment,
 			.pushConstants = { ranges },
 			.dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor },
-			.colorTextureFormats = { rts[0].formats[0] },
-			.depthTextureFormat = rts[0].depthFormat,
+			.colorTextureFormats = { colorTexture->format },
+			.depthTextureFormat = depthTexture->format,
 			.cullMode = vk::CullModeFlagBits::eNone,
 			.frontFace = vk::FrontFace::eClockwise,
 			.viewport = vk::Viewport {0, 0, 0, 0},
@@ -153,11 +123,11 @@ void SkyboxPass::render(vk::CommandBuffer cmdbuf, uint32_t index)
 	vk::RenderPassBeginInfo renderPassBI;
 	renderPassBI.setRenderPass(m_renderPass->vkRenderPass())
 		.setClearValues(clears)
-		.setFramebuffer(framebuffers[index])
+		.setFramebuffer(framebuffer)
 		.setRenderArea(VkRect2D({ 0,0 }, { width, height }));
 	cmdbuf.beginRenderPass(renderPassBI, vk::SubpassContents::eInline);
 	{
-		cmdbuf.setViewport(0, { vk::Viewport{ 0, (float)0, (float)width, (float)height, 0.0f, 1.0f}});
+		cmdbuf.setViewport(0, { vk::Viewport{ 0, (float)0, (float)width, (float)height, 0.0f, 1.0f} });
 		cmdbuf.setScissor(0, { vk::Rect2D{vk::Offset2D{0, 0}, vk::Extent2D{ width, height } } });
 		m_pipeline->bind(cmdbuf);
 		m_pipeline->bindDescriptorSets(cmdbuf, {

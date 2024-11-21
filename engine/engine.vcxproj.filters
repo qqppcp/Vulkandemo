@@ -180,6 +180,12 @@
     <ClCompile Include="Pass\src\LightBoxPass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Pass\src\TAAPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Pass\src\ClearPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\Context.h">
@@ -360,6 +366,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Pass\LightBoxPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\TAAPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\ClearPass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

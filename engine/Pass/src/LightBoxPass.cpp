@@ -16,16 +16,13 @@ LightBoxPass::LightBoxPass() {}
 
 LightBoxPass::~LightBoxPass()
 {
-	for (auto framebuffer : framebuffers)
-	{
-		Context::GetInstance().device.destroyFramebuffer(framebuffer);
-	}
+	Context::GetInstance().device.destroyFramebuffer(framebuffer);
 }
 
-void LightBoxPass::init(std::vector<RenderTarget>& rts)
+void LightBoxPass::init(std::shared_ptr<Texture> colorTexture, std::shared_ptr<Texture> depthTexture)
 {
-	width = rts[0].width;
-	height = rts[0].height;
+	width = colorTexture->width;
+	height = colorTexture->height;
 	auto device = Context::GetInstance().device;
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
@@ -76,51 +73,22 @@ void LightBoxPass::init(std::vector<RenderTarget>& rts)
 	UploadBufferData({}, vertexBuffer, vertexBuffer->size, vertices.data());
 	UploadBufferData({}, indexBuffer, indexBuffer->size, indices.data());
 	{
-		std::vector<vk::Format> formats = rts[0].formats;
-		formats.push_back(rts[0].depthFormat);
-		std::vector<vk::AttachmentLoadOp> loads;
-		std::vector<vk::AttachmentStoreOp> stores;
-		for (int i = 0; i < rts[0].clears.size(); i++)
-		{
-			switch (rts[0].clears[i])
-			{
-			case LoadOp::Clear:
-				loads.push_back(vk::AttachmentLoadOp::eClear); break;
-			case LoadOp::Load:
-				loads.push_back(vk::AttachmentLoadOp::eLoad); break;
-			default:
-				loads.push_back(vk::AttachmentLoadOp::eDontCare);
-				break;
-			}
-			stores.push_back(vk::AttachmentStoreOp::eStore);
-		}
-		m_renderPass.reset(new RenderPass(formats,
+		m_renderPass.reset(new RenderPass(std::vector<vk::Format>{colorTexture->format, depthTexture->format},
 			std::vector<vk::ImageLayout>{vk::ImageLayout::eUndefined, vk::ImageLayout::eUndefined},
-			std::vector<vk::ImageLayout>{vk::ImageLayout::ePresentSrcKHR, vk::ImageLayout::eDepthStencilAttachmentOptimal },
-			loads,
-			stores,
+			std::vector<vk::ImageLayout>{vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eDepthStencilAttachmentOptimal },
+			std::vector<vk::AttachmentLoadOp>{vk::AttachmentLoadOp::eDontCare, vk::AttachmentLoadOp::eDontCare},
+			std::vector<vk::AttachmentStoreOp>{vk::AttachmentStoreOp::eStore, vk::AttachmentStoreOp::eStore},
 			vk::PipelineBindPoint::eGraphics, {}, 1));
 	}
 	{
-		for (int i = 0; i < rts.size(); i++)
-		{
-			std::vector<vk::ImageView> attachments;
-			for (int j = 0; j < rts[i].views.size(); j++)
-			{
-				attachments.push_back(rts[i].views[j]);
-			}
-			if (rts[i].depth != -1)
-			{
-				attachments.push_back(rts[i].depthView);
-			}
-			vk::FramebufferCreateInfo framebufferCI;
-			framebufferCI.setAttachments(attachments)
-				.setLayers(1)
-				.setRenderPass(m_renderPass->vkRenderPass())
-				.setWidth(width)
-				.setHeight(height);
-			framebuffers.emplace_back(Context::GetInstance().device.createFramebuffer(framebufferCI));
-		}
+		std::vector<vk::ImageView> attachments{ colorTexture->view, depthTexture->view };
+		vk::FramebufferCreateInfo framebufferCI;
+		framebufferCI.setAttachments(attachments)
+			.setLayers(1)
+			.setRenderPass(m_renderPass->vkRenderPass())
+			.setWidth(width)
+			.setHeight(height);
+		framebuffer = Context::GetInstance().device.createFramebuffer(framebufferCI);
 	}
 	auto shader = std::make_shared<GPUProgram>(shaderPath + "aabb.vert.spv", shaderPath + "aabb.frag.spv");
 	std::vector<Pipeline::SetDescriptor> setLayouts;
@@ -150,8 +118,8 @@ void LightBoxPass::init(std::vector<RenderTarget>& rts)
 			.fragmentShader = shader->Fragment,
 			.pushConstants = {ranges},
 			.dynamicStates = { vk::DynamicState::eViewport, vk::DynamicState::eScissor },
-			.colorTextureFormats = {Context::GetInstance().swapchain->info.surfaceFormat.format},
-			.depthTextureFormat = vk::Format::eD24UnormS8Uint,
+			.colorTextureFormats = {colorTexture->format},
+			.depthTextureFormat = depthTexture->format,
 			.cullMode = vk::CullModeFlagBits::eBack,
 			.viewport = vk::Viewport {0, 0, 0, 0},
 			.depthTestEnable = true,
@@ -177,7 +145,7 @@ void LightBoxPass::render(vk::CommandBuffer cmdbuf, uint32_t index, glm::vec3 li
 	c[2] = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 1000.0f);
 	vk::RenderPassBeginInfo renderPassBI;
 	renderPassBI.setRenderPass(m_renderPass->vkRenderPass())
-		.setFramebuffer(framebuffers[index])
+		.setFramebuffer(framebuffer)
 		.setRenderArea(VkRect2D({ 0,0 }, { width, height }));
 	cmdbuf.beginRenderPass(renderPassBI, vk::SubpassContents::eInline);
 	cmdbuf.setViewport(0, { vk::Viewport{ 0, (float)height, (float)width, -(float)height, 0.0f, 1.0f} });

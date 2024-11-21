@@ -34,18 +34,17 @@ namespace
 
 ForwardPass::~ForwardPass()
 {
-	for (auto framebuffer : framebuffers)
-	{
-		Context::GetInstance().device.destroyFramebuffer(framebuffer);
-	}
+	Context::GetInstance().device.destroyFramebuffer(framebuffer);
 	Context::GetInstance().device.unmapMemory(stageBuffer1->memory);
 	Context::GetInstance().device.unmapMemory(stageBuffer2->memory);
 }
 
-void ForwardPass::init(std::vector<RenderTarget>& rts)
+void ForwardPass::init(std::shared_ptr<Texture> colorTexture, std::shared_ptr<Texture> depthTexture)
 {
-	width = rts[0].width;
-	height = rts[0].height;
+	colorTexture_ = colorTexture;
+	depthTexture_ = depthTexture;
+	width = colorTexture->width;
+	height = colorTexture->height;
 	{
 		light.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		light.lightPos = glm::vec4(0.0f, 1.f, 0.0f, 1.0f);
@@ -61,51 +60,22 @@ void ForwardPass::init(std::vector<RenderTarget>& rts)
 		ptr2 = Context::GetInstance().device.mapMemory(stageBuffer2->memory, 0, sizeof(Transforms));
 	}
 	{
-		std::vector<vk::Format> formats = rts[0].formats;
-		formats.push_back(rts[0].depthFormat);
-		std::vector<vk::AttachmentLoadOp> loads;
-		std::vector<vk::AttachmentStoreOp> stores;
-		for (int i = 0; i < rts[0].clears.size(); i++)
-		{
-			switch (rts[0].clears[i])
-			{
-			case LoadOp::Clear:
-				loads.push_back(vk::AttachmentLoadOp::eClear); break;
-			case LoadOp::Load:
-				loads.push_back(vk::AttachmentLoadOp::eLoad); break;
-			default:
-				loads.push_back(vk::AttachmentLoadOp::eDontCare);
-				break;
-			}
-			stores.push_back(vk::AttachmentStoreOp::eStore);
-		}
-		m_renderPass.reset(new RenderPass(formats,
+		m_renderPass.reset(new RenderPass(std::vector<vk::Format>{colorTexture->format, depthTexture->format},
 			std::vector<vk::ImageLayout>{vk::ImageLayout::eUndefined, vk::ImageLayout::eUndefined},
-			std::vector<vk::ImageLayout>{vk::ImageLayout::ePresentSrcKHR, vk::ImageLayout::eDepthStencilAttachmentOptimal },
-			loads,
-			stores,
+			std::vector<vk::ImageLayout>{vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eDepthStencilAttachmentOptimal },
+			std::vector<vk::AttachmentLoadOp>{vk::AttachmentLoadOp::eDontCare, vk::AttachmentLoadOp::eDontCare},
+			std::vector<vk::AttachmentStoreOp>{vk::AttachmentStoreOp::eStore, vk::AttachmentStoreOp::eStore},
 			vk::PipelineBindPoint::eGraphics, {}, 1));
 	}
 	{
-		for (int i = 0; i < rts.size(); i++)
-		{
-			std::vector<vk::ImageView> attachments;
-			for (int j = 0; j < rts[i].views.size(); j++)
-			{
-				attachments.push_back(rts[i].views[j]);
-			}
-			if (rts[i].depth != -1)
-			{
-				attachments.push_back(rts[i].depthView);
-			}
-			vk::FramebufferCreateInfo framebufferCI;
-			framebufferCI.setAttachments(attachments)
-				.setLayers(1)
-				.setRenderPass(m_renderPass->vkRenderPass())
-				.setWidth(width)
-				.setHeight(height);
-			framebuffers.emplace_back(Context::GetInstance().device.createFramebuffer(framebufferCI));
-		}
+		std::vector<vk::ImageView> attachments{ colorTexture->view, depthTexture->view };
+		vk::FramebufferCreateInfo framebufferCI;
+		framebufferCI.setAttachments(attachments)
+			.setLayers(1)
+			.setRenderPass(m_renderPass->vkRenderPass())
+			.setWidth(width)
+			.setHeight(height);
+		framebuffer = Context::GetInstance().device.createFramebuffer(framebufferCI);
 	}
 	{
 		blinnShader.reset(new GPUProgram(shaderPath + "blinn-phong.vert.spv", shaderPath + "blinn-phong.frag.spv"));
@@ -175,8 +145,8 @@ void ForwardPass::init(std::vector<RenderTarget>& rts)
 			.vertexShader = blinnShader->Vertex,
 			.fragmentShader = blinnShader->Fragment,
 			.dynamicStates = {vk::DynamicState::eViewport, vk::DynamicState::eScissor},
-			.colorTextureFormats = {rts[0].formats[0]},
-			.depthTextureFormat = rts[0].depthFormat,
+			.colorTextureFormats = {colorTexture->format},
+			.depthTextureFormat = depthTexture->format,
 			.cullMode = vk::CullModeFlagBits::eNone,
 			.frontFace = vk::FrontFace::eClockwise,
 			.viewport = vk::Viewport {0, 0, 0, 0},
@@ -221,7 +191,7 @@ void ForwardPass::render(vk::CommandBuffer cmdbuf, uint32_t index, vk::Buffer in
 	clear[0].setColor({ 0.05f, 0.05f, 0.05f, 1.0f });
 	clear[1].setDepthStencil(1.0f);
 	renderPassBI.setRenderPass(m_renderPass->vkRenderPass())
-		.setFramebuffer(framebuffers[index])
+		.setFramebuffer(framebuffer)
 		.setRenderArea(VkRect2D({ 0,0 }, { width, height }))
 		.setClearValues(clear);
 	cmdbuf.beginRenderPass(renderPassBI, vk::SubpassContents::eInline);

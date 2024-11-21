@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -148,6 +148,7 @@
     <ClCompile Include="imgui\src\select.cpp" />
     <ClCompile Include="layer\src\imguiLayer.cpp" />
     <ClCompile Include="layer\src\layerFactory.cpp" />
+    <ClCompile Include="Pass\src\ClearPass.cpp" />
     <ClCompile Include="Pass\src\CullingPass.cpp" />
     <ClCompile Include="Pass\src\ForwardPass.cpp" />
     <ClCompile Include="Pass\src\FullScreenPass.cpp" />
@@ -161,6 +162,7 @@
     <ClCompile Include="Pass\src\SkyboxPass.cpp" />
     <ClCompile Include="Pass\src\SSAOPass.cpp" />
     <ClCompile Include="Pass\src\SSRIntersectPass.cpp" />
+    <ClCompile Include="Pass\src\TAAPass.cpp" />
     <ClCompile Include="renderer\src\backend.cpp" />
     <ClCompile Include="bit_array.cpp" />
     <ClCompile Include="bounds.cpp" />
@@ -206,6 +208,7 @@
     <ClInclude Include="layer\layer.h" />
     <ClInclude Include="layer\layerFactory.h" />
     <ClInclude Include="define.h" />
+    <ClInclude Include="Pass\ClearPass.h" />
     <ClInclude Include="Pass\CullingPass.h" />
     <ClInclude Include="Pass\ForwardPass.h" />
     <ClInclude Include="Pass\FullScreenPass.h" />
@@ -220,6 +223,7 @@
     <ClInclude Include="Pass\SkyboxPass.h" />
     <ClInclude Include="Pass\SSAOPass.h" />
     <ClInclude Include="Pass\SSRIntersectPass.h" />
+    <ClInclude Include="Pass\TAAPass.h" />
     <ClInclude Include="renderer\backend.h" />
     <ClInclude Include="bit_array.h" />
     <ClInclude Include="bounds.h" />
