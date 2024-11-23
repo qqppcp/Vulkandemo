@@ -26,6 +26,11 @@ struct Transforms
 	glm::aligned_mat4 viewInv;
 };
 
+struct PushConstants
+{
+	uint32_t applyJitter;
+};
+
 namespace
 {
 	LightData light;
@@ -62,7 +67,7 @@ void ForwardPass::init(std::shared_ptr<Texture> colorTexture, std::shared_ptr<Te
 	{
 		m_renderPass.reset(new RenderPass(std::vector<vk::Format>{colorTexture->format, depthTexture->format},
 			std::vector<vk::ImageLayout>{vk::ImageLayout::eUndefined, vk::ImageLayout::eUndefined},
-			std::vector<vk::ImageLayout>{vk::ImageLayout::eColorAttachmentOptimal, vk::ImageLayout::eDepthStencilAttachmentOptimal },
+			std::vector<vk::ImageLayout>{vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageLayout::eShaderReadOnlyOptimal },
 			std::vector<vk::AttachmentLoadOp>{vk::AttachmentLoadOp::eDontCare, vk::AttachmentLoadOp::eDontCare},
 			std::vector<vk::AttachmentStoreOp>{vk::AttachmentStoreOp::eStore, vk::AttachmentStoreOp::eStore},
 			vk::PipelineBindPoint::eGraphics, {}, 1));
@@ -140,10 +145,16 @@ void ForwardPass::init(std::shared_ptr<Texture> colorTexture, std::shared_ptr<Te
 			set.bindings.push_back(binding);
 			setLayouts.push_back(set);
 		}
+		std::vector<vk::PushConstantRange> ranges(1);
+		ranges[0].setOffset(0)
+			.setSize(sizeof(PushConstants))
+			.setStageFlags(vk::ShaderStageFlagBits::eVertex);
+
 		const Pipeline::GraphicsPipelineDescriptor gpDesc = {
 			.sets = setLayouts,
 			.vertexShader = blinnShader->Vertex,
 			.fragmentShader = blinnShader->Fragment,
+			.pushConstants = { ranges },
 			.dynamicStates = {vk::DynamicState::eViewport, vk::DynamicState::eScissor},
 			.colorTextureFormats = {colorTexture->format},
 			.depthTextureFormat = depthTexture->format,
@@ -172,7 +183,7 @@ void ForwardPass::init(std::shared_ptr<Texture> colorTexture, std::shared_ptr<Te
 
 void ForwardPass::render(vk::CommandBuffer cmdbuf, uint32_t index, vk::Buffer indexBuffer,
 	vk::Buffer indirectDrawBuffer, vk::Buffer indirectDrawCountBuffer,
-	uint32_t numMeshes, uint32_t bufferSize)
+	uint32_t numMeshes, uint32_t bufferSize, bool applyJitter)
 {
 	auto view = CameraManager::mainCamera->GetViewMatrix();
 	auto project = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 1000.0f);
@@ -194,11 +205,16 @@ void ForwardPass::render(vk::CommandBuffer cmdbuf, uint32_t index, vk::Buffer in
 		.setFramebuffer(framebuffer)
 		.setRenderArea(VkRect2D({ 0,0 }, { width, height }))
 		.setClearValues(clear);
+
+	PushConstants pushConst{
+		.applyJitter = uint32_t(applyJitter),
+	};
 	cmdbuf.beginRenderPass(renderPassBI, vk::SubpassContents::eInline);
 	{
 		cmdbuf.setViewport(0, { vk::Viewport{ 0, (float)height, (float)width, -(float)height, 0.0f, 1.0f} });
 		cmdbuf.setScissor(0, { vk::Rect2D{vk::Offset2D{0, 0}, vk::Extent2D{ width, height } } });
 		m_pipeline->bind(cmdbuf);
+		m_pipeline->updatePushConstant(cmdbuf, vk::ShaderStageFlagBits::eVertex, sizeof(PushConstants), &pushConst);
 		m_pipeline->bindDescriptorSets(cmdbuf, {
 			{.set = CAMERA_SET, .bindIdx = 0},
 			{.set = TEXTURES_SET, .bindIdx = 0},
@@ -212,6 +228,8 @@ void ForwardPass::render(vk::CommandBuffer cmdbuf, uint32_t index, vk::Buffer in
 			0, numMeshes, bufferSize);
 	}
 	cmdbuf.endRenderPass();
+	colorTexture_->layout = vk::ImageLayout::eShaderReadOnlyOptimal;
+	depthTexture_->layout = vk::ImageLayout::eShaderReadOnlyOptimal;
 }
 
 glm::vec3 ForwardPass::LightPos()

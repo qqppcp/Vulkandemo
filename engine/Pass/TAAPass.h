@@ -20,6 +20,7 @@ public:
 		std::shared_ptr<Texture> colorTexture);
 	void doAA(vk::CommandBuffer cmdbuf, uint32_t index, int isCamMoving);
 	std::shared_ptr<Texture> ColorTexture() const { return outColorTexture; }
+
 private:
 	void initSharpenPipeline();
 	std::shared_ptr<Sampler> sampler;

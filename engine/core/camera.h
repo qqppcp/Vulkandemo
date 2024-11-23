@@ -34,7 +34,7 @@ enum Camera_Movement {
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
 const float SPEED = 22.5f;
-const float SENSITIVITY = 0.1f;
+const float SENSITIVITY = 1.f;
 const float ZOOM = 45.0f;
 
 
@@ -197,6 +197,7 @@ class CameraManager
 public:
 	static std::shared_ptr<Camera> mainCamera;
 	static void init(glm::vec3 position);
+	static glm::mat4 JitterMat(uint32_t frameIndex, int numSamples, int width, int height);
 };
 
 class CameraUI : public ImGuiBase

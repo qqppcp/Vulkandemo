@@ -186,6 +186,9 @@
     <ClCompile Include="Pass\src\ClearPass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Pass\src\VelocityPass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="renderer\Context.h">
@@ -356,9 +359,6 @@
     <ClInclude Include="Pass\SkyboxPass.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="renderer\RenderTarget.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="APP\forwardshade.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -372,6 +372,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Pass\ClearPass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass\VelocityPass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -33,8 +33,10 @@ void TAAPass::init(std::shared_ptr<Texture> depthTexture, std::shared_ptr<Textur
 		vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eStorage, getMipLevelsCount(width, height));
 	historyTexture = TextureManager::Instance().Create(width, height, vk::Format::eR16G16B16A16Sfloat,
 		vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eStorage, getMipLevelsCount(width, height));
+	outColorTexture->layout = vk::ImageLayout::eUndefined;
+	historyTexture->layout = vk::ImageLayout::eUndefined;
 
-	auto shader = std::make_shared<GPUProgram>(shaderPath + "taaresolve.comp");
+	auto shader = std::make_shared<GPUProgram>(shaderPath + "taaresolve.comp.spv");
 
 	std::vector<Pipeline::SetDescriptor> setLayouts;
 	{
@@ -148,7 +150,7 @@ void TAAPass::doAA(vk::CommandBuffer cmdbuf, uint32_t index, int isCamMoving)
 
 void TAAPass::initSharpenPipeline()
 {
-	auto shader = std::make_shared<GPUProgram>(shaderPath + "taahistorycopyandsharpen.comp");
+	auto shader = std::make_shared<GPUProgram>(shaderPath + "taahistorycopyandsharpen.comp.spv");
 	std::vector<Pipeline::SetDescriptor> setLayouts;
 	{
 		Pipeline::SetDescriptor set;

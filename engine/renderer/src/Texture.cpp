@@ -315,6 +315,8 @@ void Texture::transitionImageLayout(vk::CommandBuffer cmdbuf, vk::ImageLayout ne
         .setImage(image)
         .setSubresourceRange(range);
     cmdbuf.pipelineBarrier(sourceStage, destinationStage, {}, {}, {}, barrier);
+
+    layout = newLayout;
 }
 
 void Texture::createImage(uint32_t w, uint32_t h) {

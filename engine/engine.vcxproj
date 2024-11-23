@@ -163,6 +163,7 @@
     <ClCompile Include="Pass\src\SSAOPass.cpp" />
     <ClCompile Include="Pass\src\SSRIntersectPass.cpp" />
     <ClCompile Include="Pass\src\TAAPass.cpp" />
+    <ClCompile Include="Pass\src\VelocityPass.cpp" />
     <ClCompile Include="renderer\src\backend.cpp" />
     <ClCompile Include="bit_array.cpp" />
     <ClCompile Include="bounds.cpp" />
@@ -224,6 +225,7 @@
     <ClInclude Include="Pass\SSAOPass.h" />
     <ClInclude Include="Pass\SSRIntersectPass.h" />
     <ClInclude Include="Pass\TAAPass.h" />
+    <ClInclude Include="Pass\VelocityPass.h" />
     <ClInclude Include="renderer\backend.h" />
     <ClInclude Include="bit_array.h" />
     <ClInclude Include="bounds.h" />
@@ -248,7 +250,6 @@
     <ClInclude Include="partitioner.h" />
     <ClInclude Include="renderer\Pipeline.h" />
     <ClInclude Include="renderer\program.h" />
-    <ClInclude Include="renderer\RenderTarget.h" />
     <ClInclude Include="renderer\render_process.h" />
     <ClInclude Include="renderer\Sampler.h" />
     <ClInclude Include="renderer\Shader.h" />

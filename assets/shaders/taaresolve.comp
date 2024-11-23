@@ -28,7 +28,7 @@ const ivec2 PATTERN_3X3[9] = {ivec2(-1, -1), ivec2(-1, 0), ivec2(-1, 1),
                               ivec2(1, 1),   ivec2(1, 0),  ivec2(1, -1)};
 
 const float NEARDIST = 0.1f;
-const float FARDIST = 4000.0f;
+const float FARDIST = 1000.0f;
 
 float calculateLinearDepth(float depth) {
   return (2.0 * NEARDIST) / (FARDIST + NEARDIST - depth * (FARDIST - NEARDIST));
@@ -317,9 +317,9 @@ void main() {
   float blendFactor =
       calculateBlendFactor(closestDepth, velocity, noGeometry, workSize,
                            colorIn, clampHistory, velocityLerp);
-
+  
   vec3 colorResolve = mix(clampHistory, colorIn, blendFactor);
 
   imageStore(outColorImage, ivec2(gl_GlobalInvocationID.xy),
-             vec4(colorResolve, velocityLerp));
+             vec4(vec3(colorResolve), velocityLerp));
 }

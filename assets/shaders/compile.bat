@@ -20,4 +20,6 @@ D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=frag void.frag -o void.frag.
 D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=frag lighting.frag -o lighting.frag.spv
 D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=vert aabb.vert -o aabb.vert.spv
 D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=frag aabb.frag -o aabb.frag.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=vert velocity.vert -o velocity.vert.spv
+D:/VulkanSDK/1.3.243.0/Bin/glslc.exe -fshader-stage=frag velocity.frag -o velocity.frag.spv
 pause

@@ -16,6 +16,14 @@ struct Flow
 layout (location = 0) out Flow flow;
 layout (location = 4) out flat int omaterialID;
 
+struct GBufferPushConstants {
+  uint applyJitter;
+};
+
+layout(push_constant) uniform constants {
+  GBufferPushConstants gbufferConstData;
+};
+
 void main()
 {
     Vertex vertex = vertexAlias[VERTEX_INDEX]
@@ -31,5 +39,9 @@ void main()
     //flow.normal = mat3(transpose(inverse(model))) * vec3(vertex.normalX, vertex.normalY, vertex.normalZ);
     vec4 pos = MVP.projection * MVP.view * MVP.model * vec4(position, 1.0);
     
-    gl_Position = pos;
+    if (gbufferConstData.applyJitter == 0) {
+      gl_Position = pos;
+    } else {
+      gl_Position = MVP.projection * MVP.view * MVP.model * MVP.jitterMat * vec4(position, 1.0);
+    }
 }

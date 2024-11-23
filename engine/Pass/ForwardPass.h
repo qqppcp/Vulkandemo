@@ -18,7 +18,7 @@ public:
 	void init(std::shared_ptr<Texture> color, std::shared_ptr<Texture> depth);
 	void render(vk::CommandBuffer cmdbuf, uint32_t index, vk::Buffer indexBuffer, 
 		vk::Buffer indirectDrawBuffer, vk::Buffer indirectDrawCountBuffer,
-		uint32_t numMeshes, uint32_t bufferSize);
+		uint32_t numMeshes, uint32_t bufferSize, bool applyJitter = false);
 
 	glm::vec3 LightPos();
 	std::shared_ptr<Pipeline> pipeline() const { return m_pipeline; }

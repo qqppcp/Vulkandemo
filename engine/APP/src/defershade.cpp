@@ -227,12 +227,12 @@ void DeferShade::run()
 		lightData.lightPos = glm::vec4(lightPos, 1.0f);
 	}
 
-
+	UniformTransforms uniform;
 	while (!WindowShouleClose())
 	{
-		UniformTransforms uniform;
 		uniform.model = glm::rotate<float>(glm::mat4(1.0), glm::radians<float>(0), glm::vec3(0, 0, -1));
 		uniform.model = glm::mat4(1.0f);
+		uniform.prevViewMat = uniform.view;
 		uniform.view = CameraManager::mainCamera->GetViewMatrix();
 		uniform.projection = glm::perspective(glm::radians(45.0f), (float)1280 / 720, 0.1f, 1000.0f);
 		memcpy(ptr, &uniform, sizeof(UniformTransforms));

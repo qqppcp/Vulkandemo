@@ -7,6 +7,8 @@
 #include "SkyboxPass.h"
 #include "CullingPass.h"
 #include "ForwardPass.h"
+#include "VelocityPass.h"
+#include "TAAPass.h"
 #include "LightBoxPass.h"
 #include "FullScreenPass.h"
 
@@ -34,7 +36,9 @@ namespace
 	std::shared_ptr<ClearPass> clearPass;
 	std::shared_ptr<SkyboxPass> skyboxPass;
 	std::shared_ptr<ForwardPass> forwardPass;
+	std::shared_ptr<VelocityPass> velocityPass;
 	std::shared_ptr<CullingPass> cullingPass;
+	std::shared_ptr<TAAPass> taaPass;
 	std::shared_ptr<LightBoxPass> lightBoxPass;
 	std::shared_ptr<FullScreenPass> fullScreenPass;
 
@@ -49,28 +53,36 @@ namespace
 	std::vector < std::shared_ptr < Sampler >> samplers;
 	void* ptr = nullptr;
 	int count;
+
 }
 
 void ForwardShade::Init(uint32_t width, uint32_t height)
 {
+	state.width = width, state.height = height;
 	CameraManager::init({ 0.0f, 2.0f, 4.0f });
 	GeometryManager::GetInstance().loadgltf(modelPath + "mirrors_edge_apartment_-_interior_scene.glb");
-	colorTexture = TextureManager::Instance().Create(width, height, vk::Format::eR8G8B8A8Srgb, vk::ImageUsageFlagBits::eColorAttachment |
-		vk::ImageUsageFlagBits::eSampled );
+	colorTexture = TextureManager::Instance().Create(width, height, vk::Format::eR8G8B8A8Unorm, vk::ImageUsageFlagBits::eColorAttachment |
+		vk::ImageUsageFlagBits::eSampled | vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst |
+		vk::ImageUsageFlagBits::eTransferSrc);
 	depthTexture = TextureManager::Instance().Create(width, height, vk::Format::eD24UnormS8Uint, vk::ImageUsageFlagBits::eDepthStencilAttachment |
 		vk::ImageUsageFlagBits::eSampled );
 	uiLayer.reset(new ImGuiLayer());
 	clearPass.reset(new ClearPass);
 	skyboxPass.reset(new SkyboxPass());
 	forwardPass.reset(new ForwardPass());
+	velocityPass.reset(new VelocityPass());
 	cullingPass.reset(new CullingPass());
+	taaPass.reset(new TAAPass());
 	lightBoxPass.reset(new LightBoxPass());
 	fullScreenPass.reset(new FullScreenPass(false));
+	uiLayer->addUI(new ImGuiFrameTimeInfo(&state.timer));
 	uiLayer->addUI(new CameraUI());
 	uiLayer->addUI(forwardPass.get());
 	clearPass->init(colorTexture, depthTexture);
 	skyboxPass->init(colorTexture, depthTexture);
 	forwardPass->init(colorTexture, depthTexture);
+	velocityPass->init(width, height);
+	taaPass->init(depthTexture, velocityPass->velocityTexture(), colorTexture);
 	lightBoxPass->init(colorTexture, depthTexture);
 	auto glb = GeometryManager::GetInstance().getMesh(modelPath + "mirrors_edge_apartment_-_interior_scene.glb");
 	vertexBuffer.reset(new Buffer(glb->vertices.size() * sizeof(Vertex), vk::BufferUsageFlagBits::eShaderDeviceAddress | 
@@ -106,9 +118,12 @@ void ForwardShade::Init(uint32_t width, uint32_t height)
 	forwardPipeline->bindResource(1, 0, 0, { glb->textures.begin(), glb->textures.end() });
 	forwardPipeline->bindResource(2, 0, 0, { samplers.begin(), 1 });
 	forwardPipeline->bindResource(3, 0, 0, { vertexBuffer, indiceBuffer, indirectBuffer, materialBuffer }, vk::DescriptorType::eStorageBuffer);
+	auto velocityPipeline = velocityPass->pipeline();
+	velocityPipeline->bindResource(0, 0, 0, uniformBuffer, 0, sizeof(UniformTransforms), vk::DescriptorType::eUniformBuffer);
+	velocityPipeline->bindResource(3, 0, 0, { vertexBuffer, indiceBuffer, indirectBuffer, materialBuffer }, vk::DescriptorType::eStorageBuffer);
 	cullingPass->init(glb, indirectBuffer);
 	fullScreenPass->init({ Context::GetInstance().swapchain->info.surfaceFormat.format });
-	fullScreenPass->pipeline()->bindResource(0, 0, 0, { colorTexture
+	fullScreenPass->pipeline()->bindResource(0, 0, 0, { taaPass->ColorTexture()
 		}, samplers.back());
 }
 
@@ -135,6 +150,8 @@ void ForwardShade::Shutdown()
 	fullScreenPass.reset();
 	lightBoxPass.reset();
 	cullingPass.reset();
+	velocityPass.reset();
+	taaPass.reset();
 	forwardPass.reset();
 	skyboxPass.reset();
 	clearPass.reset();
@@ -162,13 +179,17 @@ void ForwardShade::run()
 		fenceCI.setFlags(vk::FenceCreateFlagBits::eSignaled);
 		cmdbufAvaliableFences[i] = device.createFence(fenceCI);
 	}
-
+	UniformTransforms uniform;
+	int frameIndex = 0;
+	
 	while (!WindowShouleClose())
 	{
-		UniformTransforms uniform;
 		uniform.model = glm::mat4(1.0f);
+		bool isCamMoving = !(uniform.prevViewMat == CameraManager::mainCamera->GetViewMatrix());
+		uniform.prevViewMat = uniform.view;
 		uniform.view = CameraManager::mainCamera->GetViewMatrix();
 		uniform.projection = glm::perspective(glm::radians(45.0f), (float)1280 / 720, 0.1f, 1000.0f);
+		uniform.jitter = CameraManager::JitterMat(frameIndex, 16, state.width, state.height);
 		memcpy(ptr, &uniform, sizeof(UniformTransforms));
 		CopyBuffer(stageBuffer->buffer, uniformBuffer->buffer, sizeof(UniformTransforms), 0, 0);
 
@@ -187,11 +208,16 @@ void ForwardShade::run()
 			Context::GetInstance().queueFamileInfo.computeFamilyIndex.value(), Context::GetInstance().queueFamileInfo.graphicsFamilyIndex.value());
 		forwardPass->render(cmdbufs[current_frame], 0,
 			indiceBuffer->buffer, cullingPass->culledIndirectDrawBuffer()->buffer, cullingPass->culledIndirectDrawCountBuffer()->buffer,
+			count, sizeof(IndirectCommandAndMeshData), true);
+		velocityPass->render(cmdbufs[current_frame], 0,
+			indiceBuffer->buffer, cullingPass->culledIndirectDrawBuffer()->buffer, cullingPass->culledIndirectDrawCountBuffer()->buffer,
 			count, sizeof(IndirectCommandAndMeshData));
 		lightBoxPass->render(cmdbufs[current_frame], 0,
 			forwardPass->LightPos());
+		taaPass->doAA(cmdbufs[current_frame], frameIndex, isCamMoving);
 
 		fullScreenPass->render(Context::GetInstance().image_index, false);
+		frameIndex++;
 		uiLayer->OnRender();
 		VulkanBackend::EndFrame(deltatime.count() / 1000.0, cmdbufs[current_frame], cmdbufAvaliableFences[current_frame], imageAvaliables[current_frame], imageDrawFinishs[current_frame]);
 		WindowEventProcessing();
