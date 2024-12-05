@@ -79,4 +79,8 @@ void main()
     }
     
     FragColor = vec4(ambient + diffuse + specular, 1.0);
+
+    //Debug for octblend
+    //delete me
+    FragColor = vec4(diffuseColor * 2.0, 1.0);
 }

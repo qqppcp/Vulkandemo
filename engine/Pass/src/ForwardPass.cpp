@@ -44,7 +44,7 @@ ForwardPass::~ForwardPass()
 	Context::GetInstance().device.unmapMemory(stageBuffer2->memory);
 }
 
-void ForwardPass::init(std::shared_ptr<Texture> colorTexture, std::shared_ptr<Texture> depthTexture)
+void ForwardPass::init(std::shared_ptr<Texture> colorTexture, std::shared_ptr<Texture> depthTexture, bool clear)
 {
 	colorTexture_ = colorTexture;
 	depthTexture_ = depthTexture;
@@ -68,7 +68,8 @@ void ForwardPass::init(std::shared_ptr<Texture> colorTexture, std::shared_ptr<Te
 		m_renderPass.reset(new RenderPass(std::vector<vk::Format>{colorTexture->format, depthTexture->format},
 			std::vector<vk::ImageLayout>{vk::ImageLayout::eUndefined, vk::ImageLayout::eUndefined},
 			std::vector<vk::ImageLayout>{vk::ImageLayout::eShaderReadOnlyOptimal, vk::ImageLayout::eShaderReadOnlyOptimal },
-			std::vector<vk::AttachmentLoadOp>{vk::AttachmentLoadOp::eDontCare, vk::AttachmentLoadOp::eDontCare},
+			std::vector<vk::AttachmentLoadOp>{clear ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eDontCare, 
+				clear ? vk::AttachmentLoadOp::eClear : vk::AttachmentLoadOp::eDontCare},
 			std::vector<vk::AttachmentStoreOp>{vk::AttachmentStoreOp::eStore, vk::AttachmentStoreOp::eStore},
 			vk::PipelineBindPoint::eGraphics, {}, 1));
 	}
@@ -183,8 +184,12 @@ void ForwardPass::init(std::shared_ptr<Texture> colorTexture, std::shared_ptr<Te
 
 void ForwardPass::render(vk::CommandBuffer cmdbuf, uint32_t index, vk::Buffer indexBuffer,
 	vk::Buffer indirectDrawBuffer, vk::Buffer indirectDrawCountBuffer,
-	uint32_t numMeshes, uint32_t bufferSize, bool applyJitter)
+	uint32_t numMeshes, uint32_t bufferSize, bool applyJitter, vk::Framebuffer _framebuffer)
 {
+	if (_framebuffer == VK_NULL_HANDLE)
+	{
+		_framebuffer = framebuffer;
+	}
 	auto view = CameraManager::mainCamera->GetViewMatrix();
 	auto project = glm::perspective(glm::radians(45.0f), (float)width / height, 0.1f, 1000.0f);
 	glm::mat4 viewProjMat = project * view;
@@ -202,7 +207,7 @@ void ForwardPass::render(vk::CommandBuffer cmdbuf, uint32_t index, vk::Buffer in
 	clear[0].setColor({ 0.05f, 0.05f, 0.05f, 1.0f });
 	clear[1].setDepthStencil(1.0f);
 	renderPassBI.setRenderPass(m_renderPass->vkRenderPass())
-		.setFramebuffer(framebuffer)
+		.setFramebuffer(_framebuffer)
 		.setRenderArea(VkRect2D({ 0,0 }, { width, height }))
 		.setClearValues(clear);
 

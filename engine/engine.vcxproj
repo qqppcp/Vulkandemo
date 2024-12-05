@@ -142,6 +142,7 @@
   <ItemGroup>
     <ClCompile Include="APP\src\defershade.cpp" />
     <ClCompile Include="APP\src\forwardshade.cpp" />
+    <ClCompile Include="APP\src\octblend.cpp" />
     <ClCompile Include="core\src\camera.cpp" />
     <ClCompile Include="core\src\geometry.cpp" />
     <ClCompile Include="core\src\system.cpp" />
@@ -202,6 +203,7 @@
   <ItemGroup>
     <ClInclude Include="APP\defershade.h" />
     <ClInclude Include="APP\forwardshade.h" />
+    <ClInclude Include="APP\octblend.h" />
     <ClInclude Include="core\geometry.h" />
     <ClInclude Include="core\system.h" />
     <ClInclude Include="imgui\select.h" />

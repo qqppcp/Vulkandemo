@@ -212,7 +212,7 @@ void Context::queryQueueFamily(vk::PhysicalDevice physicalDevice)
 }
 
 void Context::createDevice() {
-	std::vector<const char*> extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+	std::vector<const char*> extensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME, VK_EXT_MEMORY_BUDGET_EXTENSION_NAME };
 	vk::PhysicalDeviceFeatures features;
 	features.setSamplerAnisotropy(true)
 		.setFillModeNonSolid(true)

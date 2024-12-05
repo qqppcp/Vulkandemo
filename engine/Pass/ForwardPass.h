@@ -15,13 +15,14 @@ class ForwardPass : public ImGuiBase
 public:
 	ForwardPass() = default;
 	~ForwardPass();
-	void init(std::shared_ptr<Texture> color, std::shared_ptr<Texture> depth);
+	void init(std::shared_ptr<Texture> color, std::shared_ptr<Texture> depth, bool clear = false);
 	void render(vk::CommandBuffer cmdbuf, uint32_t index, vk::Buffer indexBuffer, 
 		vk::Buffer indirectDrawBuffer, vk::Buffer indirectDrawCountBuffer,
-		uint32_t numMeshes, uint32_t bufferSize, bool applyJitter = false);
+		uint32_t numMeshes, uint32_t bufferSize, bool applyJitter = false, vk::Framebuffer c = VK_NULL_HANDLE);
 
 	glm::vec3 LightPos();
 	std::shared_ptr<Pipeline> pipeline() const { return m_pipeline; }
+	std::shared_ptr<RenderPass> renderPass() const { return m_renderPass; }
 	virtual void customUI() override;
 	std::shared_ptr<Texture> colorTexture() { return colorTexture_; }
 	std::shared_ptr<Texture> depthTexture() { return depthTexture_; }
